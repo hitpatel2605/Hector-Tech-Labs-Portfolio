@@ -39,7 +39,7 @@ try {
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(W, H, false);
-  renderer.setClearColor(0x02020a);
+  renderer.setClearColor(0x000000);
 } catch {
   hasWebGL = false;
   if (canvas) canvas.style.display = 'none';
@@ -52,7 +52,7 @@ camera.position.set(0, 2.4, 9);
 if (hasWebGL && renderer) {
   composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(W, H), 0.4, 0.4, 0.3);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(W, H), 0.24, 0.35, 0.38);
   composer.addPass(bloomPass);
   composer.addPass(new OutputPass());
 }
@@ -82,16 +82,20 @@ const cube = new Float32Array(N * 3);
 const rand = new Float32Array(N * 4);
 const edge = new Float32Array(N);
 
-const br = Array.from({ length: 9 }, (_, i) => {
-  const a = (i / 9) * 6.283 + r() * 0.5;
-  const re = 1.4 + r() * 1.5;
+const br = Array.from({ length: 16 }, (_, i) => {
+  const a = (i / 16) * 6.283 + r() * 0.45;
+  const re = 1.7 + r() * 1.8;
+  const startY = i < 6 ? 0.25 + r() * 0.55 : 1.1 + r() * 0.4;
   return {
-    p0: [0, 1.3, 0],
-    p1: [Math.cos(a) * re * 0.35, 2.3, Math.sin(a) * re * 0.35],
+    p0: [0, startY, 0],
+    p1: [Math.cos(a) * re * 0.4, startY + 1.0, Math.sin(a) * re * 0.4],
     p2: [Math.cos(a) * re - 0.3, 3.1 + r() * 0.9, Math.sin(a) * re * 0.65],
   };
 });
-br.push({ p0: [0, 1.6, 0], p1: [1.4, 3.0, 0], p2: [2.9, 4.2, 0.1] });
+br.push({ p0: [0, 0.4, 0], p1: [1.5, 1.8, 0.1], p2: [3.4, 4.2, 0.1] });
+br.push({ p0: [0, 0.35, 0], p1: [-1.6, 1.7, -0.1], p2: [-3.5, 4.0, -0.1] });
+br.push({ p0: [0, 0.3, 0], p1: [0.9, 1.4, 0.8], p2: [2.2, 3.3, 1.2] });
+br.push({ p0: [0, 0.3, 0], p1: [-0.9, 1.4, -0.8], p2: [-2.4, 3.3, -1.1] });
 
 const CC = [0, 2.6, 0];
 const h = 1.2;
@@ -112,14 +116,14 @@ for (let i = 0; i < N; i++) {
   const k = i * 3;
   const q = r();
   let x, y, z, g;
-  if (q < 0.12) {
+  if (q < 0.14) {
     const t = r();
-    const ra = 0.04 + 0.14 * t * t;
+    const ra = 0.22 * (1 - t) * (1 - t) + 0.06 + 0.14 * t * t;
     x = gauss() * ra;
     z = gauss() * ra;
     y = t * 1.5;
     g = 0;
-  } else if (q < 0.38) {
+  } else if (q < 0.46) {
     const b = br[(r() * br.length) | 0];
     const t = r();
     const p = bez(b.p0, b.p1, b.p2, t);
@@ -142,7 +146,7 @@ for (let i = 0; i < N; i++) {
         Math.sin(dx * 3.1 + 1.3) *
         Math.sin(dy * 2.7 + 0.4) *
         Math.sin(dz * 3.3 + 2.1);
-    x = -0.3 + dx * 2.9 * n;
+    x = -0.3 + dx * 3.45 * n;
     y = 3.35 + dy * 1.15 * n;
     z = dz * 1.7 * n;
     g = 2;
@@ -187,7 +191,7 @@ geo.setAttribute('aEdge', new THREE.BufferAttribute(edge, 1));
 const vert = `attribute vec3 aSphere;attribute vec3 aCube;attribute vec4 aRand;attribute float aEdge;
 uniform float uTime,uIntro,uMorph,uSize,uWarp,uReflect,uCubeScale,uCursorFalloff,uCursorStrength;uniform mat3 uCubeRot;uniform vec3 uCur[4];uniform vec4 uCW;uniform vec3 uCubeCenter,uCubeOffset,uCursor;
 varying vec3 vColor;varying float vAlpha;
-const vec3 CYAN=vec3(.31,.85,1.);const vec3 BLUE=vec3(.18,.42,1.);const vec3 VIOLET=vec3(.54,.36,1.);
+const vec3 CYAN=vec3(.31,.85,1.);const vec3 BLUE=vec3(.10,.26,1.);const vec3 VIOLET=vec3(.54,.36,1.);
 void main(){
  float stag=aRand.x*.45;float tI=smoothstep(stag*.8,stag*.8+.55,uIntro);float tM=smoothstep(stag,stag+.55,uMorph);
  vec3 cube=uCubeRot*(aCube-uCubeCenter)*uCubeScale+uCubeCenter+uCubeOffset;
@@ -195,20 +199,17 @@ void main(){
  float arc=sin(3.14159*tI)*.5+sin(3.14159*tM)*1.1;
  p+=vec3(sin(aRand.z*6.283+uTime*.6),cos(aRand.z*12.57+uTime*.5),sin(aRand.z*9.42+uTime*.4))*arc*(.6+aRand.y*.5);
  p+=vec3(sin(uTime*.5+aRand.z*20.),cos(uTime*.4+aRand.z*31.),sin(uTime*.45+aRand.z*17.))*.035*(1.-tM*.7);
- vec3 push=vec3(0.);
- for(int i=0;i<4;i++){vec2 dd=p.xy-uCur[i].xy;float l=length(dd)+1e-3;float f=exp(-l*l*uCursorFalloff)*uCW[i];vec2 dir=dd/l;vec2 tg=vec2(-dir.y,dir.x);
-  push.xy+=tg*f*.08;push.z+=f*.25*(aRand.z-.20);}
- p+=push*(.6+aRand.y*.5)*uCursorStrength;
- vec3 d3=p-uCursor;float f=exp(-dot(d3.xy,d3.xy)*2.2)*uWarp*tM;p.z-=f*.45;p.xy+=normalize(d3.xy+1e-4)*f*.12;
+ vec3 d3=p-uCursor;float f=exp(-dot(d3.xy,d3.xy)*2.2);p.z-=f*.45;p.xy+=normalize(d3.xy+1e-4)*f*.12;
  if(uReflect>.5)p.y=-p.y;
  float rad=clamp(length(position.xz)/3.,0.,1.);
- vec3 tc=mix(mix(CYAN,BLUE,smoothstep(0.,.45,rad)),VIOLET,smoothstep(.45,1.,rad));
+ float rootGlow=(aRand.w<1.5)?exp(-position.y*.65)*.45:0.;
+ vec3 tc=mix(mix(CYAN,BLUE,smoothstep(0.,.45,rad)),VIOLET,smoothstep(.45,1.,rad))+CYAN*rootGlow*.35;
  vec3 cc=aEdge>.5?mix(CYAN,VIOLET,smoothstep(-1.2,1.2,(aCube.y-uCubeCenter.y)+(aCube.x-uCubeCenter.x)*-.4))*1.5:BLUE*.85;
- vColor=mix(tc,cc,tM);vAlpha=mix(.9,aEdge>.5?1.:.55,tM)*(uReflect>.5?.16:1.);
+ vColor=mix(tc,cc,tM);vAlpha=mix(.85+rootGlow*.15,aEdge>.5?1.:.55,tM)*(uReflect>.5?.16:1.);
  vec4 mv=modelViewMatrix*vec4(p,1.);
  gl_PointSize=aRand.y*uSize*(8./-mv.z)*mix(1.,aEdge>.5?1.3:.8,tM);gl_Position=projectionMatrix*mv;}`;
 
-const frag = `varying vec3 vColor;varying float vAlpha;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(vColor,smoothstep(.5,.16,d)*vAlpha*.62);}`;
+const frag = `varying vec3 vColor;varying float vAlpha;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(pow(vColor,vec3(1.25)),smoothstep(.5,.16,d)*vAlpha*.48);}`;
 
 const mk = (refl) =>
   new THREE.ShaderMaterial({
@@ -259,7 +260,7 @@ const rm = new THREE.ShaderMaterial({
 void main(){vec2 p=(vUv-.5)*2.;float ang=atan(p.y,p.x),r=length(p);r+=.007*sin(ang*5.+uTime*.3)+.004*sin(ang*11.-uTime*.5);float a=0.;
 for(int i=0;i<6;i++){float c=.10+float(i)*.13+.01*sin(uTime*.6+float(i));a+=ring(r,c,.003+.0012*float(i));}
 float pr=fract(uTime*.12);a+=ring(r,pr*.9,.012)*(1.-pr)*(.3+uPulse);
-vec3 col=mix(vec3(.12,.35,1.),vec3(.54,.36,1.),smoothstep(.3,.95,r));a*=smoothstep(1.,.75,r)*uDim;gl_FragColor=vec4(col*a*.7,a*.7);}`,
+vec3 col=mix(vec3(.08,.24,.78),vec3(.42,.26,.82),smoothstep(.3,.95,r));a*=smoothstep(1.,.75,r)*uDim;gl_FragColor=vec4(col*a*.7,a*.7);}`,
 });
 const rings = new THREE.Mesh(new THREE.PlaneGeometry(28, 28), rm);
 rings.rotation.x = -Math.PI / 2;
@@ -349,14 +350,12 @@ const S = (a, b, x) => {
 };
 const eo = (x) => 1 - (1 - cl(x)) ** 3;
 
-const nav = document.getElementById('nav');
 const logo = document.getElementById('logo');
 const hero = document.getElementById('hero');
 const h2Words = [...document.querySelectorAll('#h2 b')];
 const cp = document.getElementById('cp');
 const cards = [...document.querySelectorAll('.card')];
-const ringEl = document.getElementById('ring');
-const dotEl = document.getElementById('dot');
+const contactCard = document.getElementById('contact-card');
 
 const e4 = new THREE.Euler();
 const m4 = new THREE.Matrix4();
@@ -446,10 +445,11 @@ function animate(now) {
     lenis.start();
   }
 
-  // Map 0..1 scroll progress to prototype seconds (5.0s -> 20.0s)
-  const ts = 5.0 + scrollState.progress * 15.0;
+  // Map 0..1 scroll progress to prototype seconds (5.0s -> 17.5s, ending right on Contact Us)
+  const ts = 5.0 + scrollState.progress * 12.5;
   const morph = S(9.5, 14.5, ts);
-  const zoom = S(16.5, 18.5, ts);
+  const zoom = S(14.5, 16.5, ts);
+  const contactIn = S(15.4, 16.8, ts);
   const rotY = 0.18 * S(14.5, 16, ts) + -0.73 * zoom;
   const rotX = 0.18 * zoom;
   const scl = 1 + 0.05 * zoom;
@@ -458,7 +458,7 @@ function animate(now) {
   const camZ = 9 - 0.6 * zoom;
   const camX = 0.25 * zoom;
   const dim = 1 - 0.55 * zoom;
-  const warp = S(18.4, 19.4, ts);
+  const warp = S(16.0, 17.5, ts);
 
   const drift = prefersReducedMotion ? 0 : 1;
   camera.position.set(
@@ -469,10 +469,7 @@ function animate(now) {
   camera.lookAt(0, 2, 0);
   camera.updateMatrixWorld();
 
-  // Custom cursor + pointer->world unprojection onto z=0 plane (lerp 0.15)
-  ringEl.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
-  dotEl.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
-
+  // Pointer->world unprojection onto z=0 plane (lerp 0.15)
   const hit = worldAt(mouseX, mouseY);
   smoothWorld.lerp(hit, 0.15);
   cursorHistory.push({ t, pos: smoothWorld.clone() });
@@ -505,11 +502,10 @@ function animate(now) {
   tg.rotation.copy(e4);
   tg.scale.setScalar(scl);
   tg.position.set(cubeX, 2.6 + cubeY, 0);
-  tm.opacity = S(18, 19, ts) * morph * 0.7;
+  tm.opacity = S(15.0, 16.5, ts) * morph * 0.7;
 
   // DOM intro + scroll-driven fades
   const navOpacity = prefersReducedMotion ? 1 : S(2.0, 2.8, t);
-  nav.style.opacity = navOpacity;
   logo.style.opacity = navOpacity;
   const heroIn = prefersReducedMotion ? 1 : S(2.3, 3.3, t);
   const heroOut = S(5.2, 6.2, ts);
@@ -524,26 +520,42 @@ function animate(now) {
   caps.forEach((el, i) => {
     const th = ph + (i * 6.2832) / 5;
     const fl = Math.sin(t * 1.3 + i * 1.7) * 0.04;
-    capVec.set(4.2 * Math.cos(th), 0.55 + fl, 2.6 * Math.sin(th)).project(camera);
+    capVec.set(3.1 * Math.cos(th), 0.55 + fl, 2.0 * Math.sin(th)).project(camera);
     const d = (Math.sin(th) + 1) / 2;
+    const backFade = S(0.25, 0.5, d);
     const x = (capVec.x * 0.5 + 0.5) * W;
     const y = (-capVec.y * 0.5 + 0.5) * H;
     el.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%) perspective(900px) rotateZ(${-Math.cos(th) * 6}deg) rotateY(${Math.cos(th) * 18}deg) scale(${0.78 + 0.28 * d})`;
-    el.style.opacity = ci * (0.15 + 0.85 * Math.pow(d, 1.2));
+    el.style.opacity = ci * (0.15 + 0.85 * Math.pow(d, 1.2)) * backFade;
+    el.style.visibility = backFade === 0 ? 'hidden' : 'visible';
+    el.style.pointerEvents = backFade === 0 ? 'none' : 'auto';
     el.style.filter = `blur(${(1 - d) * 3}px)`;
     el.style.zIndex = Math.round(d * 10);
   });
 
-  // Section 2: headline mask reveal, paragraph, 4 cards staggered
+  // Section 2: headline mask reveal, paragraph, 4 cards appear fast during morph (9.8..12.6s)
   h2Words.forEach((b, i) => {
-    b.style.transform = `translateY(${(1 - S(17.5 + i * 0.25, 18.5 + i * 0.25, ts)) * 110}%)`;
+    const reveal = S(14.5 + i * 0.25, 15.8 + i * 0.25, ts);
+    b.style.transform = `translateY(${(1 - reveal) * 110}%)`;
   });
-  cp.style.opacity = S(18.3, 19.1, ts);
+  cp.style.opacity = S(15.0, 16.2, ts);
+
+  // Triggered when HECTOR TECH LABS appears on cube (15.2..16.4s): 4 cards exit downward, Contact Us card enters
+  const cardsOut = 1 - S(15.2, 16.4, ts);
   cards.forEach((c, i) => {
-    const s = S(18.6 + i * 0.18, 19.5 + i * 0.18, ts);
+    const cardIn = S(9.8 + i * 0.45, 11.2 + i * 0.45, ts);
+    const s = cardIn * cardsOut;
     c.style.opacity = s;
-    c.style.transform = `translateY(${(1 - s) * 64}px)`;
+    c.style.transform = `translateY(${(1 - cardIn) * 64 + (1 - cardsOut) * 28}px)`;
+    c.style.pointerEvents = s > 0.1 ? 'auto' : 'none';
   });
+
+  // Single Contact Us card (final composition beneath branded cube)
+  if (contactCard) {
+    contactCard.style.opacity = contactIn;
+    contactCard.style.transform = `translateY(${(1 - contactIn) * 40}px)`;
+    contactCard.style.pointerEvents = contactIn > 0.5 ? 'auto' : 'none';
+  }
 
   if (composer) {
     composer.render();

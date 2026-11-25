@@ -13,7 +13,7 @@
   body {
     width: 100%;
     min-height: 100%;
-    background-color: #02020a;
+    background-color: #000000;
     color: var(--hud-text);
     overflow-x: clip;
     font-family: var(--hud-font);
@@ -33,13 +33,6 @@
   a {
     text-decoration: none;
     color: inherit;
-  }
-
-  @media (pointer: fine) {
-    html,
-    body {
-      cursor: none;
-    }
   }
 }
 
@@ -164,7 +157,7 @@
     letter-spacing: var(--hud-tracking-label);
     text-transform: uppercase;
     line-height: 1.2;
-    cursor: none;
+    cursor: pointer;
     background: rgba(255, 255, 255, 0.05);
     color: var(--hud-text);
     backdrop-filter: blur(12px);
@@ -221,8 +214,10 @@
   }
 
   #badge {
-    bottom: max(36vh, calc(8vh + 3.3 * var(--hud-size-headline) + 16px));
-  }
+   font-size: clamp(9px, 0.7vw, 11px);
+  letter-spacing: 0.14em;
+  padding: 0.4vh 0.8vw;
+}
 
   #hp {
     bottom: max(15vh, calc(8vh + 48px + 16px));
