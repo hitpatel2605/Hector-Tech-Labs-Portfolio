@@ -7,6 +7,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { projects } from './projects.ts';
 import {
   CURSOR_RADIUS,
   CURSOR_STRENGTH,
@@ -37,7 +38,7 @@ try {
     antialias: false,
     preserveDrawingBuffer: true,
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   renderer.setSize(W, H, false);
   renderer.setClearColor(0x000000);
 } catch {
@@ -428,12 +429,18 @@ const sampleTrailAt = (t, delay) => {
   return smoothWorld;
 };
 
+const scrollContainer = document.getElementById('scroll-container');
 const startTime = performance.now();
 let introUnlocked = false;
 
 function animate(now) {
   requestAnimationFrame(animate);
   lenis.raf(now);
+
+  // Pause WebGL rendering and capsule updates when 3D story section is scrolled off-screen
+  if (scrollContainer && scrollContainer.getBoundingClientRect().bottom <= 0) {
+    return;
+  }
 
   const t = (now - startTime) * 0.001;
 
@@ -563,3 +570,69 @@ function animate(now) {
 }
 
 requestAnimationFrame(animate);
+
+// ---------- Selected Projects Grid
+const projectsGrid = document.getElementById('projects-grid');
+if (projectsGrid) {
+  projects.forEach((proj, idx) => {
+    const card = document.createElement('article');
+    card.className =
+      'hud-frame relative flex flex-col overflow-hidden rounded-[20px] border border-white/12 bg-[rgba(10,12,24,0.85)] transition-all duration-500 hover:border-sky-400/40 hover:shadow-[0_0_30px_rgba(30,141,248,0.18)]';
+    if (!prefersReducedMotion) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(28px)';
+      card.style.transitionDelay = `${idx * 90}ms`;
+    }
+
+    const tagsHtml = proj.tags
+      .map(
+        (tag) =>
+          `<span class="px-2.5 py-1 text-[11px] font-gm uppercase tracking-wider rounded-full border border-white/12 bg-white/5 text-white/75">${tag}</span>`
+      )
+      .join('');
+
+    card.innerHTML = `
+      <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+      <div class="w-full aspect-[16/10] overflow-hidden border-b border-white/10">
+        <img src="${proj.image}" alt="${proj.title}" class="w-full h-full object-cover" loading="lazy" />
+      </div>
+      <div class="p-6 flex flex-col flex-1 justify-between gap-4">
+        <div>
+          <h3 class="hud-label text-lg text-white mb-2">${proj.title}</h3>
+          <p class="hud-body text-sm text-white/70">${proj.description}</p>
+        </div>
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-wrap gap-2">${tagsHtml}</div>
+          <a href="${proj.url}" target="_blank" rel="noopener noreferrer" class="hud-label text-xs tracking-[0.14em] text-[#4fd8ff] hover:text-white transition-colors inline-flex items-center gap-1.5">
+            VIEW PROJECT <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    `;
+    projectsGrid.appendChild(card);
+  });
+
+  const revealCard = (el) => {
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
+  };
+
+  if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            revealCard(entry.target);
+            obs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.05 }
+    );
+    [...projectsGrid.children].forEach((c) => obs.observe(c));
+    setTimeout(() => {
+      [...projectsGrid.children].forEach(revealCard);
+    }, 1000);
+  }
+  ScrollTrigger.refresh();
+}

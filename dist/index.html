@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hector Tech Labs</title>
-    <script type="module" crossorigin src="/assets/index-yNMktZ1L.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BV2tSNSv.css">
+    <script type="module" crossorigin src="/assets/index-Rqo1E041.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DuwqPBtJ.css">
   </head>
   <body>
     <div id="scroll-container" class="relative w-full h-[500vh] bg-[#000000]">
@@ -112,40 +112,6 @@
         </article>
       </div>
 
-      <!-- Contact Us Card (replaces 4 service cards when HECTOR TECH LABS appears on cube) -->
-      <div
-        id="contact-wrap"
-        class="absolute left-[3.8vw] right-[3.8vw] bottom-[5vh] h-[29vh] flex items-center justify-center z-30 pointer-events-none"
-      >
-        <article
-          id="contact-card"
-          class="hud-card hud-frame relative w-full max-w-[54vw] h-full flex flex-col items-center justify-center text-center px-[3vw] py-[2vh] opacity-0 pointer-events-none"
-        >
-          <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-          <h3 class="hud-label text-[clamp(1.1rem,1.8vw,1.9rem)] tracking-[0.06em] mb-[1vh] text-white">
-            LET'S BUILD SOMETHING TOGETHER
-          </h3>
-          <p class="hud-body text-white/75 max-w-[38vw] mb-[2.2vh]">
-            Have an idea or project in mind? Let's turn it into something exceptional.
-          </p>
-          <div class="flex items-center gap-[1.5vw]">
-            <a
-              href="mailto:hello@hectortechlabs.com"
-              class="hud-btn hud-btn-primary hud-frame pointer-events-auto"
-            >
-              <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-              Contact Us<span class="hud-arrow">→</span>
-            </a>
-            <a
-              href="mailto:hello@hectortechlabs.com"
-              class="hud-body text-white/55 hover:text-white transition-colors pointer-events-auto"
-            >
-              hello@hectortechlabs.com
-            </a>
-          </div>
-        </article>
-      </div>
-
       <!-- Logo -->
       <div
         id="logo"
@@ -159,6 +125,57 @@
       </div>
       </div>
     </div>
+
+    <section
+      id="projects"
+      class="relative z-40 w-full bg-[#02020a] py-[12vh] px-[4vw] overflow-x-clip"
+    >
+      <div class="mb-[5vh]">
+        <div class="hud-label text-[12px] tracking-[0.14em] text-white/70 mb-[1vh]">
+          <span class="hud-accent">//</span> SELECTED PROJECTS
+        </div>
+        <h2 class="hud-headline font-gm font-light uppercase text-[clamp(28px,3.2vw,52px)] leading-[1.05] text-white">
+          OUR WORK
+        </h2>
+      </div>
+      <div
+        id="projects-grid"
+        class="grid grid-cols-1 md:grid-cols-3 gap-[24px]"
+      ></div>
+    </section>
+
+    <section
+      id="contact"
+      class="relative z-40 w-full bg-[#02020a] py-[12vh] px-[4vw] flex items-center justify-center overflow-x-clip"
+    >
+      <article
+        id="contact-card"
+        class="hud-frame relative w-full max-w-[780px] rounded-[20px] border border-white/12 bg-[rgba(10,12,24,0.85)] flex flex-col items-center justify-center text-center px-8 py-12"
+      >
+        <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        <h3 class="hud-label text-[clamp(1.2rem,2vw,2rem)] tracking-[0.06em] mb-3 text-white">
+          LET'S BUILD SOMETHING TOGETHER
+        </h3>
+        <p class="hud-body text-white/75 max-w-lg mb-7">
+          Have an idea or project in mind? Let's turn it into something exceptional.
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-6">
+          <a
+            href="mailto:hello@hectortechlabs.com"
+            class="hud-btn hud-btn-primary hud-frame pointer-events-auto"
+          >
+            <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+            Contact Us<span class="hud-arrow">→</span>
+          </a>
+          <a
+            href="mailto:hello@hectortechlabs.com"
+            class="hud-body text-white/60 hover:text-white transition-colors pointer-events-auto"
+          >
+            hello@hectortechlabs.com
+          </a>
+        </div>
+      </article>
+    </section>
 
   </body>
 </html>
