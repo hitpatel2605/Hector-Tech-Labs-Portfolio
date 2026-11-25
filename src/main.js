@@ -492,13 +492,14 @@ function animate(now) {
 
   if (!prefersReducedMotion && projectsSection) {
     const p = cl(projectsScrollState.progress, 0, 1);
+    const endEase = 1 - S(0.8, 1.0, p);
     const arc = Math.sin(p * Math.PI);
-    const dRotY = p * Math.PI * 2.5;
-    const dRotX = Math.sin(p * Math.PI * 2) * 0.15;
-    const dCubeX = -1.4 * arc;
-    const dCubeY = -0.65 * arc;
-    const dScl = -0.15 * arc;
-    const dDim = -0.18 * arc;
+    const dRotY = p * Math.PI * 2.5 * endEase;
+    const dRotX = Math.sin(p * Math.PI * 2) * 0.15 * endEase;
+    const dCubeX = -1.4 * arc * endEase;
+    const dCubeY = -0.65 * arc * endEase;
+    const dScl = -0.15 * arc * endEase;
+    const dDim = -0.18 * arc * endEase;
 
     if (
       Number.isFinite(dRotY) &&
