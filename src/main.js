@@ -381,6 +381,21 @@ gsap.to(scrollState, {
   },
 });
 
+const projectsScrollState = { progress: 0 };
+const projectsScrollTrigger = ScrollTrigger.create({
+  trigger: '#projects',
+  start: 'top bottom',
+  end: 'bottom top',
+  scrub: 1.2,
+  onUpdate: (self) => {
+    projectsScrollState.progress = cl(self.progress, 0, 1);
+  },
+});
+
+window.addEventListener('beforeunload', () => {
+  projectsScrollTrigger.kill();
+});
+
 window.setScroll = (p) => {
   scrollState.progress = cl(p, 0, 1);
 };
@@ -458,15 +473,49 @@ function animate(now) {
   const morph = S(9.5, 14.5, ts);
   const zoom = S(14.5, 16.5, ts);
   const contactIn = S(15.4, 16.8, ts);
-  const rotY = 0.18 * S(14.5, 16, ts) + -0.73 * zoom;
-  const rotX = 0.18 * zoom;
-  const scl = 1 + 0.05 * zoom;
-  const cubeX = 0.4 * zoom;
-  const cubeY = -0.45 * zoom;
+  const rotYBase = 0.18 * S(14.5, 16, ts) + -0.73 * zoom;
+  const rotXBase = 0.18 * zoom;
+  const sclBase = 1 + 0.05 * zoom;
+  const cubeXBase = 0.4 * zoom;
+  const cubeYBase = -0.45 * zoom;
   const camZ = 9 - 0.6 * zoom;
   const camX = 0.25 * zoom;
-  const dim = 1 - 0.55 * zoom;
+  const dimBase = 1 - 0.55 * zoom;
   const warp = S(16.0, 17.5, ts);
+
+  let rotY = rotYBase;
+  let rotX = rotXBase;
+  let scl = sclBase;
+  let cubeX = cubeXBase;
+  let cubeY = cubeYBase;
+  let dim = dimBase;
+
+  if (!prefersReducedMotion && projectsSection) {
+    const p = cl(projectsScrollState.progress, 0, 1);
+    const arc = Math.sin(p * Math.PI);
+    const dRotY = p * Math.PI * 2.5;
+    const dRotX = Math.sin(p * Math.PI * 2) * 0.15;
+    const dCubeX = -1.4 * arc;
+    const dCubeY = -0.65 * arc;
+    const dScl = -0.15 * arc;
+    const dDim = -0.18 * arc;
+
+    if (
+      Number.isFinite(dRotY) &&
+      Number.isFinite(dRotX) &&
+      Number.isFinite(dCubeX) &&
+      Number.isFinite(dCubeY) &&
+      Number.isFinite(dScl) &&
+      Number.isFinite(dDim)
+    ) {
+      rotY += dRotY;
+      rotX += dRotX;
+      cubeX += dCubeX;
+      cubeY += dCubeY;
+      scl = cl(scl + dScl, 0.5, 2.0);
+      dim = cl(dim + dDim, 0.15, 1.0);
+    }
+  }
 
   const drift = prefersReducedMotion ? 0 : 1;
   camera.position.set(
