@@ -430,6 +430,7 @@ const sampleTrailAt = (t, delay) => {
 };
 
 const scrollContainer = document.getElementById('scroll-container');
+const projectsSection = document.getElementById('projects');
 const startTime = performance.now();
 let introUnlocked = false;
 
@@ -437,8 +438,8 @@ function animate(now) {
   requestAnimationFrame(animate);
   lenis.raf(now);
 
-  // Pause WebGL rendering and capsule updates when 3D story section is scrolled off-screen
-  if (scrollContainer && scrollContainer.getBoundingClientRect().bottom <= 0) {
+  // Pause WebGL rendering and capsule updates when 3D story + projects sections are scrolled off-screen
+  if (projectsSection && projectsSection.getBoundingClientRect().bottom <= 0) {
     return;
   }
 
@@ -540,18 +541,27 @@ function animate(now) {
     el.style.zIndex = Math.round(d * 10);
   });
 
+  // Fade out section-2 headline, paragraph, and service cards as Projects section scrolls in
+  let sec2Fade = 1;
+  if (projectsSection) {
+    const pTop = projectsSection.getBoundingClientRect().top;
+    sec2Fade = cl(pTop / (H * 0.65), 0, 1);
+  }
+  const h2El = h2Words[0]?.closest('h2');
+  if (h2El) h2El.style.opacity = sec2Fade;
+
   // Section 2: headline mask reveal, paragraph, 4 cards appear fast during morph (9.8..12.6s)
   h2Words.forEach((b, i) => {
     const reveal = S(14.5 + i * 0.25, 15.8 + i * 0.25, ts);
     b.style.transform = `translateY(${(1 - reveal) * 110}%)`;
   });
-  cp.style.opacity = S(15.0, 16.2, ts);
+  cp.style.opacity = S(15.0, 16.2, ts) * sec2Fade;
 
   // Triggered when HECTOR TECH LABS appears on cube (15.2..16.4s): 4 cards exit downward, Contact Us card enters
   const cardsOut = 1 - S(15.2, 16.4, ts);
   cards.forEach((c, i) => {
     const cardIn = S(9.8 + i * 0.45, 11.2 + i * 0.45, ts);
-    const s = cardIn * cardsOut;
+    const s = cardIn * cardsOut * sec2Fade;
     c.style.opacity = s;
     c.style.transform = `translateY(${(1 - cardIn) * 64 + (1 - cardsOut) * 28}px)`;
     c.style.pointerEvents = s > 0.1 ? 'auto' : 'none';
