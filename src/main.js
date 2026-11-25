@@ -446,6 +446,7 @@ const sampleTrailAt = (t, delay) => {
 
 const scrollContainer = document.getElementById('scroll-container');
 const projectsSection = document.getElementById('projects');
+const contactSection = document.getElementById('contact');
 const startTime = performance.now();
 let introUnlocked = false;
 
@@ -453,8 +454,9 @@ function animate(now) {
   requestAnimationFrame(animate);
   lenis.raf(now);
 
-  // Pause WebGL rendering and capsule updates when 3D story + projects sections are scrolled off-screen
-  if (projectsSection && projectsSection.getBoundingClientRect().bottom <= 0) {
+  // Pause WebGL rendering and capsule updates when all sections are scrolled off-screen
+  const lastSection = contactSection || projectsSection;
+  if (lastSection && lastSection.getBoundingClientRect().bottom <= 0) {
     return;
   }
 
@@ -591,12 +593,8 @@ function animate(now) {
     el.style.zIndex = Math.round(d * 10);
   });
 
-  // Fade out section-2 headline, paragraph, and service cards as Projects section scrolls in
-  let sec2Fade = 1;
-  if (projectsSection) {
-    const pTop = projectsSection.getBoundingClientRect().top;
-    sec2Fade = cl(pTop / (H * 0.65), 0, 1);
-  }
+  // Fade out section-2 headline and paragraph as Projects section scrolls in
+  const sec2Fade = 1 - cl(projectsScrollState.progress * 3, 0, 1);
   const h2El = h2Words[0]?.closest('h2');
   if (h2El) h2El.style.opacity = sec2Fade;
 
@@ -607,13 +605,28 @@ function animate(now) {
   });
   cp.style.opacity = S(15.0, 16.2, ts) * sec2Fade;
 
-  // Triggered when HECTOR TECH LABS appears on cube (15.2..16.4s): 4 cards exit downward, Contact Us card enters
-  const cardsOut = 1 - S(15.2, 16.4, ts);
+  // 4 service cards appear when HECTOR TECH LABS appears on cube (14.8..16.8s) and fade out as Projects scrolls in
+  const pp = cl(projectsScrollState.progress, 0, 1);
+  const svcFade = 1 - S(0.0, 0.16, pp);
   cards.forEach((c, i) => {
-    const cardIn = S(9.8 + i * 0.45, 11.2 + i * 0.45, ts);
-    const s = cardIn * cardsOut * sec2Fade;
+    const cardIn = S(14.8 + i * 0.25, 16.0 + i * 0.25, ts);
+    const s = cardIn * svcFade;
     c.style.opacity = s;
-    c.style.transform = `translateY(${(1 - cardIn) * 64 + (1 - cardsOut) * 28}px)`;
+    c.style.transform = `translateY(${(1 - cardIn) * 64 + (1 - svcFade) * 28}px)`;
+    c.style.pointerEvents = s > 0.1 ? 'auto' : 'none';
+  });
+
+  // 3 project cards fade in after service cards exit, stay visible through Projects, and fade out before Contact enters
+  let projOut = 1;
+  if (contactSection) {
+    const cTop = contactSection.getBoundingClientRect().top;
+    projOut = cl((cTop - H * 0.55) / (H * 0.45), 0, 1);
+  }
+  projectCardEls.forEach((c, i) => {
+    const stagger = S(0.18 + i * 0.06, 0.34 + i * 0.06, pp);
+    const s = stagger * projOut;
+    c.style.opacity = s;
+    c.style.transform = `translateY(${(1 - stagger) * 64 + (1 - projOut) * 28}px)`;
     c.style.pointerEvents = s > 0.1 ? 'auto' : 'none';
   });
 
@@ -631,68 +644,43 @@ function animate(now) {
 
 requestAnimationFrame(animate);
 
-// ---------- Selected Projects Grid
-const projectsGrid = document.getElementById('projects-grid');
-if (projectsGrid) {
+// ---------- Selected Projects (inside fixed stage, like service cards)
+const projectCardsContainer = document.getElementById('project-cards');
+if (projectCardsContainer) {
   projects.forEach((proj, idx) => {
     const card = document.createElement('article');
     card.className =
-      'hud-frame relative flex flex-col overflow-hidden rounded-[20px] border border-white/12 bg-[rgba(10,12,24,0.85)] transition-all duration-500 hover:border-sky-400/40 hover:shadow-[0_0_30px_rgba(30,141,248,0.18)]';
-    if (!prefersReducedMotion) {
-      card.style.opacity = '0';
-      card.style.transform = 'translateY(28px)';
-      card.style.transitionDelay = `${idx * 90}ms`;
-    }
+      'project-card hud-card hud-frame pointer-events-auto relative flex flex-col justify-between overflow-hidden opacity-0';
 
     const tagsHtml = proj.tags
       .map(
         (tag) =>
-          `<span class="px-2.5 py-1 text-[11px] font-gm uppercase tracking-wider rounded-full border border-white/12 bg-white/5 text-white/75">${tag}</span>`
+          `<span class="px-2 py-0.5 text-[10px] font-gm uppercase tracking-wider rounded-full border border-white/12 bg-white/5 text-white/75">${tag}</span>`
       )
       .join('');
 
     card.innerHTML = `
       <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-      <div class="w-full aspect-[16/10] overflow-hidden border-b border-white/10">
+      <span class="hud-num absolute right-[1.2vw] top-[1.2vw] z-10">[ 0${idx + 1} ]</span>
+      <div class="w-full h-[17vh] shrink-0 overflow-hidden border-b border-white/10">
         <img src="${proj.image}" alt="${proj.title}" class="w-full h-full object-cover" loading="lazy" />
       </div>
-      <div class="p-6 flex flex-col flex-1 justify-between gap-4">
+      <div class="p-[1.15vw] flex flex-col flex-1 justify-between gap-[0.4vw] min-h-0">
         <div>
-          <h3 class="hud-label text-lg text-white mb-2">${proj.title}</h3>
-          <p class="hud-body text-sm text-white/70">${proj.description}</p>
+          <h3 class="hud-label hud-card-title">${proj.title}</h3>
+          <p class="hud-body mt-[0.25vw]">${proj.description}</p>
         </div>
-        <div class="flex flex-col gap-4">
-          <div class="flex flex-wrap gap-2">${tagsHtml}</div>
-          <a href="${proj.url}" target="_blank" rel="noopener noreferrer" class="hud-label text-xs tracking-[0.14em] text-[#4fd8ff] hover:text-white transition-colors inline-flex items-center gap-1.5">
+        <div class="flex items-end justify-between gap-2 pt-1">
+          <div class="flex flex-wrap gap-1.5">${tagsHtml}</div>
+          <a href="${proj.url}" target="_blank" rel="noopener noreferrer" class="hud-label text-[0.65vw] tracking-[0.14em] text-[#4fd8ff] hover:text-white transition-colors inline-flex items-center gap-1 shrink-0 pb-0.5">
             VIEW PROJECT <span aria-hidden="true">→</span>
           </a>
         </div>
       </div>
     `;
-    projectsGrid.appendChild(card);
+    projectCardsContainer.appendChild(card);
   });
-
-  const revealCard = (el) => {
-    el.style.opacity = '1';
-    el.style.transform = 'translateY(0)';
-  };
-
-  if (!prefersReducedMotion && 'IntersectionObserver' in window) {
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            revealCard(entry.target);
-            obs.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.05 }
-    );
-    [...projectsGrid.children].forEach((c) => obs.observe(c));
-    setTimeout(() => {
-      [...projectsGrid.children].forEach(revealCard);
-    }, 1000);
-  }
-  ScrollTrigger.refresh();
 }
+
+const projectCardEls = [...document.querySelectorAll('.project-card')];
+ScrollTrigger.refresh();

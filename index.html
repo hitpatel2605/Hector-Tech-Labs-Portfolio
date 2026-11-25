@@ -110,6 +110,12 @@
         </article>
       </div>
 
+      <!-- 3 Project Cards (shown in fixed stage, like service cards) -->
+      <div
+        id="project-cards"
+        class="absolute left-[3.8vw] right-[3.8vw] bottom-[5vh] h-[42vh] grid grid-cols-3 gap-[1.3vw] z-30 pointer-events-none"
+      ></div>
+
       <!-- Logo -->
       <div
         id="logo"
@@ -126,25 +132,13 @@
 
     <section
       id="projects"
-      class="relative z-40 w-full bg-transparent py-[12vh] px-[4vw] overflow-x-clip"
+      class="relative z-10 w-full bg-transparent py-[80vh] overflow-x-clip pointer-events-none"
     >
-      <div class="mb-[5vh]">
-        <div class="hud-label text-[12px] tracking-[0.14em] text-white/70 mb-[1vh]">
-          <span class="hud-accent">//</span> SELECTED PROJECTS
-        </div>
-        <h2 class="hud-headline font-gm font-light uppercase text-[clamp(28px,3.2vw,52px)] leading-[1.05] text-white">
-          OUR WORK
-        </h2>
-      </div>
-      <div
-        id="projects-grid"
-        class="grid grid-cols-1 md:grid-cols-3 gap-[24px]"
-      ></div>
     </section>
 
     <section
       id="contact"
-      class="relative z-40 w-full bg-[#02020a] py-[12vh] px-[4vw] flex items-center justify-center overflow-x-clip"
+      class="relative z-40 w-full bg-transparent py-[12vh] px-[4vw] flex items-center justify-center overflow-x-clip"
     >
       <article
         id="contact-card"
