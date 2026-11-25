@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hector Tech Labs</title>
+    <script type="module" crossorigin src="/assets/index-nm5Y0ImC.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-B3zfYiUS.css">
+  </head>
+  <body>
+    <div id="scroll-container" class="relative w-full h-[500vh] bg-[#02020a]">
+      <div id="stage" class="fixed inset-0 w-full h-screen overflow-hidden bg-[#02020a]">
+      <canvas id="c" class="absolute inset-0 w-full h-full block"></canvas>
+
+      <div id="capsules" class="pointer-events-none"></div>
+
+      <!-- Hero Section -->
+      <div id="hero" class="absolute inset-0 z-20 opacity-0 pointer-events-none">
+        <div
+          id="badge"
+          class="hud-label hud-badge hud-frame absolute left-[4vw] bottom-[36vh] flex items-center gap-[0.6vw] px-[1vw] py-[0.6vh]"
+        >
+          <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          <span class="hud-accent">//</span>
+          TECHNOLOGY &amp; DIGITAL SOLUTIONS
+        </div>
+
+        <h1
+          id="h1"
+          class="hud-headline absolute left-[4vw] bottom-[8vh]"
+        >
+          Engineering<br />Digital<br />Experiences.
+        </h1>
+
+        <p
+          id="hp"
+          class="hud-body absolute left-[69vw] w-[25vw] bottom-[15vh]"
+        >
+          Websites, software and AI-powered automation, designed and engineered to help your business move faster.
+        </p>
+
+        <div
+          id="hb"
+          class="absolute left-[69vw] bottom-[8vh] flex gap-[0.8vw] pointer-events-auto"
+        >
+          <a href="#start" class="hud-btn hud-btn-primary hud-frame">
+            <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+            Start a Project<span class="hud-arrow">→</span>
+          </a>
+          <a href="#work" class="hud-btn hud-frame">
+            <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+            View Our Work<span class="hud-arrow">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Section 2: Intelligence With Purpose -->
+      <h2
+        id="h2"
+        class="hud-headline absolute left-[4vw] top-[13vh] z-25 pointer-events-none"
+      >
+        <span class="block overflow-hidden h-[1.12em]">
+          <b class="block translate-y-[110%]">Intelligence</b>
+        </span>
+        <span class="block overflow-hidden h-[1.12em]">
+          <b class="block translate-y-[110%]">With Purpose</b>
+        </span>
+      </h2>
+
+      <p
+        id="cp"
+        class="hud-body absolute left-[73vw] w-[23vw] top-[16vh] z-25 opacity-0 pointer-events-none"
+      >
+        We engineer modern digital experiences, intelligent software and powerful technology solutions that help businesses innovate, automate and grow.
+      </p>
+
+      <!-- 4 Glass Cards -->
+      <div
+        id="cards"
+        class="absolute left-[3.8vw] right-[3.8vw] bottom-[5vh] h-[29vh] grid grid-cols-4 gap-[1.3vw] z-30 pointer-events-none"
+      >
+        <article
+          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-[1.4vw] opacity-0"
+        >
+          <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          <span class="hud-num absolute right-[1.2vw] top-[1.2vw]">[ 01 ]</span>
+          <h3 class="hud-label hud-card-title">Web Development</h3>
+          <p class="hud-body">
+            Building modern, responsive and high-performance websites for exceptional digital experiences.
+          </p>
+        </article>
+        <article
+          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-[1.4vw] opacity-0"
+        >
+          <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          <span class="hud-num absolute right-[1.2vw] top-[1.2vw]">[ 02 ]</span>
+          <h3 class="hud-label hud-card-title">Software Engineering</h3>
+          <p class="hud-body">
+            Developing custom software solutions that solve business challenges and streamline operations.
+          </p>
+        </article>
+        <article
+          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-[1.4vw] opacity-0"
+        >
+          <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          <span class="hud-num absolute right-[1.2vw] top-[1.2vw]">[ 03 ]</span>
+          <h3 class="hud-label hud-card-title">AI &amp; Automation</h3>
+          <p class="hud-body">
+            Creating intelligent systems and automated workflows that improve business productivity.
+          </p>
+        </article>
+        <article
+          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-[1.4vw] opacity-0"
+        >
+          <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          <span class="hud-num absolute right-[1.2vw] top-[1.2vw]">[ 04 ]</span>
+          <h3 class="hud-label hud-card-title">UI/UX Design</h3>
+          <p class="hud-body">
+            Designing intuitive, elegant and user-friendly digital experiences.
+          </p>
+        </article>
+      </div>
+
+      <!-- Navigation -->
+      <nav id="nav" class="absolute inset-x-0 top-0 h-[11vh] z-40" style="opacity:0">
+        <div
+          id="logo"
+          class="absolute left-[3.6vw] top-[3.2vh] flex items-center gap-[0.6vw] font-gm font-medium text-[1.15vw] tracking-[0.03em]"
+        >
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#fff" stroke-width="1.5">
+            <path d="M13 2l9.5 5.5v11L13 24 3.5 18.5v-11z" />
+            <path d="M9.5 9v8M16.5 9v8M9.5 13h7" />
+          </svg>
+          HECTOR TECH LABS
+        </div>
+
+        <div
+          id="pill"
+          class="absolute left-[32vw] w-[36vw] top-[3.3vh] h-[6vh] rounded-full bg-[rgba(26,23,27,0.92)] border border-white/10 flex justify-around items-center font-in font-medium text-[1.05vw]"
+        >
+          <span>Home</span>
+          <span>Services</span>
+          <span>Solutions</span>
+          <span>Projects</span>
+        </div>
+
+        <div
+          id="cta"
+          class="absolute left-[84vw] w-[12.5vw] top-[3.7vh] h-[5.4vh] rounded-full bg-[#1E8DF8] flex items-center justify-center font-in font-medium text-[1.05vw] transition-colors duration-200 hover:bg-[#3aa0ff]"
+        >
+          Let's Talk
+        </div>
+      </nav>
+      <div
+        id="ring"
+        class="hidden md:block fixed left-0 top-0 w-[26px] h-[26px] -ml-[13px] -mt-[13px] border border-white/90 rounded-full z-50 pointer-events-none"
+      ></div>
+      <div
+        id="dot"
+        class="hidden md:block fixed left-0 top-0 w-[6px] h-[6px] -ml-[3px] -mt-[3px] bg-white rounded-full z-50 pointer-events-none"
+      ></div>
+      </div>
+    </div>
+
+  </body>
+</html>

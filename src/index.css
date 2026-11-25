@@ -1,0 +1,22 @@
+:root {
+  --hud-font: "Geist Mono", ui-monospace, monospace;
+  --hud-weight-regular: 400;
+  --hud-weight-medium: 500;
+  --hud-accent: #4fd8ff;
+  --hud-accent-80: rgba(79, 216, 255, 0.8);
+  --hud-accent-60: rgba(79, 216, 255, 0.6);
+  --hud-text: #ffffff;
+  --hud-text-muted: rgba(255, 255, 255, 0.7);
+  --hud-border: rgba(255, 255, 255, 0.14);
+  --hud-glow: 0 0 8px rgba(79, 216, 255, 0.5);
+  --hud-tracking-label: 0.16em;
+  --hud-tracking-headline: 0.04em;
+  --hud-tracking-body: 0.02em;
+  --hud-size-label: 12px;
+  --hud-size-body: 13px;
+  --hud-size-headline: clamp(36px, 4.6vw, 84px);
+  --hud-line-headline: 1.1;
+  --hud-line-body: 1.7;
+  --hud-tick: 6px;
+  --hud-radius-card: 12px;
+}

@@ -1,0 +1,1 @@
+{"name":"hector-prototype","private":true,"scripts":{"start":"python3 -m http.server 8765"},"dependencies":{"three":"0.169.0","@fontsource/geist-mono":"*","@fontsource/inter":"*"}}

@@ -1,0 +1,26 @@
+{
+  "name": "portfolio-website-photos",
+  "version": "1.0.0",
+  "description": "Lite pack. Unzip into an empty folder, open it in Antigravity, then paste the prompts from ANTIGRAVITY_PROMPT_LITE.md (Step 0 first, then Step 1..4, one at a time). - prototype/index.html  working Three.js prototype = the source of truth (port it, don't redesign) - docs/SPEC_LITE.md     key positions, copy, colors, timeline - preview_frames/       7 frames of the finished look",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "type": "module",
+  "dependencies": {
+    "@fontsource/geist-mono": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@tailwindcss/vite": "^4.3.5",
+    "gsap": "^3.15.1",
+    "lenis": "^1.3.28",
+    "tailwindcss": "^4.3.5",
+    "three": "^0.187.0",
+    "vite": "^8.3.8"
+  }
+}
