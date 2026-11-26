@@ -7,6 +7,9 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
+import { CustomEase } from 'gsap/CustomEase';
+import { revealText, cleanupAllTextReveals } from './textReveal.ts';
 import { projects } from './projects.ts';
 import {
   CURSOR_RADIUS,
@@ -21,7 +24,7 @@ import {
   TEXT_POSITION_Y,
 } from './config.ts';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, SplitText, CustomEase);
 
 const prefersReducedMotion = window.matchMedia(
   '(prefers-reduced-motion: reduce)'
@@ -838,10 +841,6 @@ function animate(now) {
   if (h2El) h2El.style.opacity = sec2Fade;
 
   // Section 2: headline mask reveal, paragraph, 4 cards appear fast during morph (9.8..12.6s)
-  h2Words.forEach((b, i) => {
-    const reveal = S(14.5 + i * 0.25, 15.8 + i * 0.25, ts);
-    b.style.transform = `translateY(${(1 - reveal) * 110}%)`;
-  });
   cp.style.opacity = S(15.0, 16.2, ts) * sec2Fade;
 
   // 4 service cards appear when HECTOR TECH LABS appears on cube (14.8..16.8s) and fade out as Projects scrolls in
@@ -924,4 +923,139 @@ if (projectCardsContainer) {
 }
 
 const projectCardEls = [...document.querySelectorAll('.project-card')];
+
+let storyTextTl = null;
+let projectsTextTl = null;
+
+function initTextReveals() {
+  if (prefersReducedMotion) return;
+
+  // Hero: reveal on page load (~1.2s after intro starts)
+  revealText(document.getElementById('badge'), { mode: 'chars', delay: 1.1, duration: 0.5 });
+  revealText(document.getElementById('h1'), { mode: 'chars', delay: 1.2, duration: 0.7 });
+  revealText(document.getElementById('hp'), { mode: 'lines', delay: 1.35, duration: 0.7 });
+
+  // Pinned 3D story master scroll timeline (12.5s virtual span matching ts = 5.0..17.5)
+  storyTextTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#scroll-container',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: true,
+    },
+  });
+  storyTextTl.to({}, { duration: 12.5 }, 0);
+
+  document.querySelectorAll('#h2 b').forEach((b) => {
+    b.style.transform = 'none';
+  });
+  revealText(document.getElementById('h2'), {
+    mode: 'chars',
+    timeline: storyTextTl,
+    position: 9.5,
+    duration: 1.1,
+  });
+  revealText(document.getElementById('cp'), {
+    mode: 'lines',
+    timeline: storyTextTl,
+    position: 10.0,
+    duration: 1.1,
+  });
+
+  document.querySelectorAll('#cards .card').forEach((cardEl, i) => {
+    const pos = 9.8 + i * 0.25;
+    revealText(cardEl.querySelector('.hud-num'), {
+      mode: 'chars',
+      timeline: storyTextTl,
+      position: pos,
+      duration: 0.8,
+    });
+    revealText(cardEl.querySelector('.hud-card-title'), {
+      mode: 'chars',
+      timeline: storyTextTl,
+      position: pos + 0.05,
+      duration: 0.9,
+    });
+    revealText(cardEl.querySelector('.hud-body'), {
+      mode: 'lines',
+      timeline: storyTextTl,
+      position: pos + 0.1,
+      duration: 0.9,
+    });
+  });
+
+  // Projects cards inside fixed stage (driven by #projects scroll span 0..10)
+  projectsTextTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#projects',
+      start: 'top bottom',
+      end: 'bottom top',
+      scrub: true,
+    },
+  });
+  projectsTextTl.to({}, { duration: 10.0 }, 0);
+
+  projectCardEls.forEach((cardEl, i) => {
+    const pos = 1.6 + i * 0.6;
+    revealText(cardEl.querySelector('.hud-num'), {
+      mode: 'chars',
+      timeline: projectsTextTl,
+      position: pos,
+      duration: 1.0,
+    });
+    revealText(cardEl.querySelector('h3'), {
+      mode: 'chars',
+      timeline: projectsTextTl,
+      position: pos,
+      duration: 1.2,
+    });
+    revealText(cardEl.querySelector('p'), {
+      mode: 'lines',
+      timeline: projectsTextTl,
+      position: pos + 0.15,
+      duration: 1.2,
+    });
+    cardEl.querySelectorAll('.flex-wrap span').forEach((tagEl) => {
+      revealText(tagEl, {
+        mode: 'chars',
+        timeline: projectsTextTl,
+        position: pos + 0.25,
+        duration: 1.0,
+      });
+    });
+  });
+
+  // Contact us (normal-scrolling section at bottom of page: finish by bottom bottom)
+  const contactEl = document.getElementById('contact-card');
+  if (contactEl) {
+    const contactSt = {
+      trigger: '#contact',
+      start: 'top 90%',
+      end: 'bottom bottom',
+      scrub: true,
+    };
+    revealText(contactEl.querySelector('h3'), { mode: 'chars', scrollTrigger: contactSt });
+    revealText(contactEl.querySelector('p'), { mode: 'lines', scrollTrigger: contactSt });
+    contactEl.querySelectorAll('a').forEach((aEl) => {
+      revealText(aEl, { mode: 'chars', scrollTrigger: contactSt });
+    });
+  }
+
+  ScrollTrigger.refresh();
+}
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(initTextReveals).catch(initTextReveals);
+} else {
+  initTextReveals();
+}
+
+window.addEventListener('beforeunload', () => {
+  storyTextTl?.scrollTrigger?.kill();
+  storyTextTl?.kill();
+  projectsTextTl?.scrollTrigger?.kill();
+  projectsTextTl?.kill();
+  cleanupAllTextReveals();
+});
+
 ScrollTrigger.refresh();
