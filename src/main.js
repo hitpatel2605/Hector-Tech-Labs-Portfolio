@@ -509,7 +509,7 @@ const capsulesContainer = document.getElementById('capsules');
 const caps = LABELS.map((label) => {
   const d = document.createElement('div');
   d.className =
-    'hud-label hud-capsule hud-frame pointer-events-auto absolute left-0 top-0 flex items-center justify-center h-[38px] px-3.5 text-[10px] md:h-[8vh] md:px-[2.2vw] md:text-[12px] whitespace-nowrap opacity-0';
+    'hud-label hud-capsule hud-frame pointer-events-auto absolute left-0 top-0 flex items-center justify-center h-[32px] px-2.5 text-[9px] md:h-[8vh] md:px-[2.2vw] md:text-[12px] whitespace-nowrap opacity-0';
   const corners = document.createElement('span');
   corners.className = 'hud-corners';
   corners.setAttribute('aria-hidden', 'true');
@@ -706,7 +706,16 @@ function animate(now) {
   const isPortrait = fitParams.aspect < 1.2;
   const cubeXBase = (isPortrait ? 0 : 0.4) * zoom;
   const cubeYBase = -0.45 * zoom;
-  const camZ = 9 + fitParams.camZFit - 0.6 * zoom;
+  const textValNow = prefersReducedMotion ? 0 : cl(scrollState.textForm, 0, 1);
+  const textCamExtra = isPortrait
+    ? Math.max(
+        0,
+        (TEXT_WIDTH + 1.2) /
+          (2 * Math.tan((fitParams.fov * Math.PI) / 360) * Math.max(fitParams.aspect, 0.35)) -
+          (9 + fitParams.camZFit)
+      ) * textValNow
+    : 0;
+  const camZ = 9 + fitParams.camZFit + textCamExtra - 0.6 * zoom;
   const camX = (isPortrait ? 0 : 0.25) * zoom;
   const dimBase = 1 - 0.55 * zoom;
   const warp = S(16.0, 17.5, ts);
@@ -838,9 +847,9 @@ function animate(now) {
     ? 1
     : S(6.0, 6.8, ts) * (1 - S(10.0, 10.8, ts));
   const ph = (ts - 6.0) * 0.5 + 0.2 + (showCapsules ? t * 0.35 : 0);
-  const capScale = fitParams.aspect < 1.2 ? cl(fitParams.aspect / 1.2, 0.52, 1) : 1;
+  const capScale = fitParams.aspect < 1.2 ? cl(fitParams.aspect / 0.85, 0.78, 1) : 1;
   const capRx = 3.1 * capScale;
-  const capRz = 2.0 * capScale;
+  const capRz = 2.0 * (fitParams.aspect < 1.2 ? cl(fitParams.aspect / 0.85, 0.85, 1) : 1);
   caps.forEach((el, i) => {
     const th = ph + (i * 6.2832) / 5;
     const fl = Math.sin(t * 1.3 + i * 1.7) * 0.04;
@@ -884,7 +893,7 @@ function animate(now) {
   let projOut = 1;
   if (contactSection) {
     const cTop = contactSection.getBoundingClientRect().top;
-    projOut = cl((cTop - H * 0.55) / (H * 0.45), 0, 1);
+    projOut = cl((cTop - H * 0.72) / (H * 0.28), 0, 1);
   }
   projectCardEls.forEach((c, i) => {
     const stagger = S(0.18 + i * 0.06, 0.34 + i * 0.06, pp);
@@ -928,8 +937,8 @@ if (projectCardsContainer) {
     card.innerHTML = `
       <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
       <span class="hud-num absolute right-2.5 top-2 md:right-[1.2vw] md:top-[1.2vw] z-10 text-[10px] md:text-[12px]">[ 0${idx + 1} ]</span>
-      <div class="w-[104px] sm:w-[130px] md:w-full h-full md:h-[17vh] shrink-0 overflow-hidden border-r md:border-r-0 md:border-b border-white/10">
-        <img src="${proj.image}" alt="${proj.title}" class="w-full h-full object-cover" loading="lazy" />
+      <div class="w-[104px] sm:w-[130px] md:w-full h-full md:h-[130px] lg:h-[17vh] shrink-0 overflow-hidden border-r md:border-r-0 md:border-b border-white/10">
+        <img src="${proj.image}" alt="${proj.title}" class="w-full h-full object-cover object-top" loading="lazy" />
       </div>
       <div class="p-3 md:p-[1.15vw] flex flex-col flex-1 justify-between gap-1.5 md:gap-[0.4vw] min-w-0 min-h-0">
         <div>
