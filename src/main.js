@@ -987,15 +987,11 @@ document.querySelectorAll('#contact a[href^="mailto:"]').forEach((link) => {
     try {
       e.preventDefault();
       link.blur();
-      if (isTouchDevice) {
-        window.location.href = mailtoUrl;
-      } else {
-        const iframe = document.createElement('iframe');
-        iframe.style.cssText = 'display:none;width:0;height:0;border:0;';
-        iframe.src = mailtoUrl;
-        document.body.appendChild(iframe);
-        setTimeout(() => iframe.remove(), 1000);
-      }
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'display:none;width:0;height:0;border:0;';
+      iframe.src = mailtoUrl;
+      document.body.appendChild(iframe);
+      setTimeout(() => iframe.remove(), 1000);
     } catch {
       window.location.href = mailtoUrl;
     }
