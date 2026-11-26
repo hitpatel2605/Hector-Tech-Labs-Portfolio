@@ -909,11 +909,10 @@ function animate(now) {
   const capScale = fitParams.aspect < 1.2 ? cl(fitParams.aspect / 0.85, 0.78, 1) : 1;
   const capRx = 3.1 * capScale;
   const capRz = 2.0 * (fitParams.aspect < 1.2 ? cl(fitParams.aspect / 0.85, 0.85, 1) : 1);
-  const capY = W < 768 ? 0.15 : 0.55;
   caps.forEach((el, i) => {
     const th = ph + (i * 6.2832) / 5;
     const fl = Math.sin(t * 1.3 + i * 1.7) * 0.04;
-    capVec.set(capRx * Math.cos(th), capY + fl, capRz * Math.sin(th)).project(camera);
+    capVec.set(capRx * Math.cos(th), 0.55 + fl, capRz * Math.sin(th)).project(camera);
     const d = (Math.sin(th) + 1) / 2;
     const backFade = S(0.25, 0.5, d);
     const x = (capVec.x * 0.5 + 0.5) * W;
