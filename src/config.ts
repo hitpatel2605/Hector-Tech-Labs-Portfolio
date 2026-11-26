@@ -26,3 +26,7 @@ export const LINE_BODY = 1.7;
 export const CUBE_TEXT_COLOR = '#bff3ff';
 export const CUBE_FONT_SIZE = 128;
 export const CUBE_LETTER_SPACING = 16;
+
+export const SPREAD_DISTANCE = 1.0;
+export const TEXT_WIDTH = 9.0;
+export const TEXT_POSITION_Y = 2.6;

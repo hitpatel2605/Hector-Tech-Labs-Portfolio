@@ -16,6 +16,9 @@ import {
   CUBE_TEXT_COLOR,
   CUBE_FONT_SIZE,
   CUBE_LETTER_SPACING,
+  SPREAD_DISTANCE,
+  TEXT_WIDTH,
+  TEXT_POSITION_Y,
 } from './config.ts';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -41,6 +44,13 @@ try {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   renderer.setSize(W, H, false);
   renderer.setClearColor(0x000000);
+  renderer.debug.onShaderError = (gl, _program, vertexShader, fragmentShader) => {
+    console.error(
+      'Shader compile error:',
+      gl.getShaderInfoLog(vertexShader),
+      gl.getShaderInfoLog(fragmentShader)
+    );
+  };
 } catch {
   hasWebGL = false;
   if (canvas) canvas.style.display = 'none';
@@ -369,8 +379,8 @@ const lenis = new Lenis({
 lenis.stop();
 lenis.on('scroll', ScrollTrigger.update);
 
-const scrollState = { progress: 0 };
-gsap.to(scrollState, {
+const scrollState = { progress: 0, spread: 0, textForm: 0 };
+const storyScrollTrigger = gsap.to(scrollState, {
   progress: 1,
   ease: 'none',
   scrollTrigger: {
@@ -379,7 +389,7 @@ gsap.to(scrollState, {
     end: 'bottom bottom',
     scrub: 1.2,
   },
-});
+}).scrollTrigger;
 
 const projectsScrollState = { progress: 0 };
 const projectsScrollTrigger = ScrollTrigger.create({
@@ -392,8 +402,40 @@ const projectsScrollTrigger = ScrollTrigger.create({
   },
 });
 
+const spreadScrollTrigger = ScrollTrigger.create({
+  trigger: '#projects',
+  start: 'top bottom',
+  end: 'center center',
+  scrub: 1.2,
+  onUpdate: (self) => {
+    const val = prefersReducedMotion ? 0 : cl(self.progress, 0, 1);
+    if (Number.isFinite(val)) {
+      scrollState.spread = val;
+      if (val > 0 && val < 1) console.log('spread:', val.toFixed(2));
+    }
+  },
+});
+
+const textFormScrollTrigger = ScrollTrigger.create({
+  trigger: '#projects',
+  start: 'center center',
+  endTrigger: '#contact',
+  end: 'center center',
+  scrub: 1.2,
+  onUpdate: (self) => {
+    const val = prefersReducedMotion ? 0 : cl(self.progress, 0, 1);
+    if (Number.isFinite(val)) {
+      scrollState.textForm = val;
+      if (val > 0 && val < 1) console.log('textForm:', val.toFixed(2));
+    }
+  },
+});
+
 window.addEventListener('beforeunload', () => {
+  storyScrollTrigger?.kill();
   projectsScrollTrigger.kill();
+  spreadScrollTrigger.kill();
+  textFormScrollTrigger.kill();
 });
 
 window.setScroll = (p) => {
@@ -562,7 +604,8 @@ function animate(now) {
   tg.rotation.copy(e4);
   tg.scale.setScalar(scl);
   tg.position.set(cubeX, 2.6 + cubeY, 0);
-  tm.opacity = S(15.0, 16.5, ts) * morph * 0.7;
+  const cubeTextFade = 1 - cl(scrollState.spread * 2, 0, 1);
+  tm.opacity = S(15.0, 16.5, ts) * morph * 0.7 * cubeTextFade;
 
   // DOM intro + scroll-driven fades
   const navOpacity = prefersReducedMotion ? 1 : S(2.0, 2.8, t);
@@ -651,6 +694,8 @@ if (projectCardsContainer) {
     const card = document.createElement('article');
     card.className =
       'project-card hud-card hud-frame pointer-events-auto relative flex flex-col justify-between overflow-hidden opacity-0';
+    card.style.background = 'rgba(10, 12, 24, 0.85)';
+    card.style.backdropFilter = 'none';
 
     const tagsHtml = proj.tags
       .map(
