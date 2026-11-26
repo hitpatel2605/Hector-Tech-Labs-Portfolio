@@ -32,6 +32,53 @@ if (isTouchDevice) {
   }
 }
 
+// ---------- scroll restoration (Problem 1)
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+let _scrollSaveTimer = 0;
+function saveScrollPosition() {
+  if (document.visibilityState === 'hidden') return;
+  const now = Date.now();
+  if (now - _scrollSaveTimer < 200) return;
+  _scrollSaveTimer = now;
+  try {
+    sessionStorage.setItem('returnScroll', JSON.stringify({ y: window.scrollY, t: now }));
+  } catch {}
+}
+window.addEventListener('scroll', saveScrollPosition, { passive: true });
+
+// Save on external / mailto / tel link clicks
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href]');
+  if (!a) return;
+  const h = a.getAttribute('href') || '';
+  if (h.startsWith('mailto:') || h.startsWith('tel:') || (a.target === '_blank')) {
+    saveScrollPosition();
+  }
+}, true);
+
+function restoreScrollPosition() {
+  try {
+    const raw = sessionStorage.getItem('returnScroll');
+    if (!raw) return;
+    const { y, t } = JSON.parse(raw);
+    if (!Number.isFinite(y) || !Number.isFinite(t)) return;
+    if (Date.now() - t > 10 * 60 * 1000) {
+      sessionStorage.removeItem('returnScroll');
+      return;
+    }
+    sessionStorage.removeItem('returnScroll');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+        window.scrollTo({ top: y, behavior: 'instant' });
+        if (lenis) lenis.scrollTo(y, { immediate: true });
+        ScrollTrigger.update();
+      });
+    });
+  } catch {}
+}
+
 const prefersReducedMotion = window.matchMedia(
   '(prefers-reduced-motion: reduce)'
 ).matches;
@@ -688,14 +735,20 @@ const contactSection = document.getElementById('contact');
 const startTime = performance.now();
 let introUnlocked = false;
 
+let _forceRenderFrames = 0;
+
 function animate(now) {
   requestAnimationFrame(animate);
   if (lenis) lenis.raf(now);
 
   // Pause WebGL rendering and capsule updates when all sections are scrolled off-screen
-  const lastSection = contactSection || projectsSection;
-  if (lastSection && lastSection.getBoundingClientRect().bottom <= 0) {
-    return;
+  if (_forceRenderFrames > 0) {
+    _forceRenderFrames--;
+  } else {
+    const lastSection = contactSection || projectsSection;
+    if (lastSection && lastSection.getBoundingClientRect().bottom <= 0) {
+      return;
+    }
   }
 
   const t = (now - startTime) * 0.001;
@@ -812,6 +865,14 @@ function animate(now) {
   rm.uniforms.uTime.value = t;
   rm.uniforms.uDim.value = dim;
   rm.uniforms.uPulse.value = Math.max(0, 1 - Math.abs(ts - 5.6) / 0.8);
+
+  // Scale ring plane so it looks the same on mobile portrait as on desktop
+  // Desktop baseline: camZ=9, fov=35 → halfTan = tan(35/2 * PI/180) ≈ 0.3153
+  const baseHalf = Math.tan((35 * Math.PI) / 360);
+  const curHalf = Math.tan((camera.fov * Math.PI) / 360);
+  const ringScale = (camZ * curHalf) / (9 * baseHalf);
+  const ringScaleCl = cl(ringScale, 1, 3);
+  rings.scale.set(ringScaleCl, 1, ringScaleCl);
 
   tg.rotation.copy(e4);
   tg.scale.setScalar(scl);
@@ -930,6 +991,43 @@ function animate(now) {
 }
 
 requestAnimationFrame(animate);
+
+// ---------- WebGL context loss recovery
+if (canvas) {
+  canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+  });
+  canvas.addEventListener('webglcontextrestored', () => {
+    saveScrollPosition();
+    location.reload();
+  });
+}
+
+// ---------- Visibility / pageshow / focus restore
+let _resumePending = false;
+function handleResume() {
+  if (_resumePending) return;
+  _resumePending = true;
+  _forceRenderFrames = 10;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      _resumePending = false;
+      ScrollTrigger.refresh();
+      restoreScrollPosition();
+    });
+  });
+}
+
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) handleResume();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') handleResume();
+});
+window.addEventListener('focus', handleResume);
+
+// Run restore once on initial load
+restoreScrollPosition();
 
 // ---------- Selected Projects (inside fixed stage, like service cards)
 const projectCardsContainer = document.getElementById('project-cards');
