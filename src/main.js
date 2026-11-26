@@ -392,10 +392,99 @@ const tp = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.0), tm);
 tp.position.z = 1.22;
 tg.add(tp);
 scene.add(tg);
-document.fonts.ready.then(() => {
-  drawText();
-  tex.needsUpdate = true;
-});
+let faceTextPoints = null;
+let faceTextMat = null;
+let faceBase = null;
+let faceDir = null;
+let faceDist = null;
+let facePosAttr = null;
+let lastFaceSpread = -1;
+
+function buildFaceTextParticles() {
+  try {
+    drawText();
+    tex.needsUpdate = true;
+    const data = cx.getImageData(0, 0, 1024, 512).data;
+    const pts = [];
+    for (let y = 0; y < 512; y++) {
+      for (let x = 0; x < 1024; x++) {
+        if (data[(y * 1024 + x) * 4 + 3] > 128) {
+          pts.push(x, y);
+        }
+      }
+    }
+    const avail = pts.length / 2;
+    if (avail === 0) return;
+
+    const count = 4000;
+    faceBase = new Float32Array(count * 3);
+    const pos = new Float32Array(count * 3);
+    const cols = new Float32Array(count * 3);
+    faceDir = new Float32Array(count * 3);
+    faceDist = new Float32Array(count);
+
+    const cStart = new THREE.Color('#bff3ff');
+    const cEnd = new THREE.Color('#4fd8ff');
+    const tmpCol = new THREE.Color();
+
+    for (let i = 0; i < count; i++) {
+      const pick = ((Math.random() * avail) | 0) * 2;
+      const wx = (pts[pick] / 1024 - 0.5) * 2.0;
+      const wy = (0.5 - pts[pick + 1] / 512) * 1.0;
+      const wz = 1.22;
+      const k = i * 3;
+      faceBase[k] = wx;
+      faceBase[k + 1] = wy;
+      faceBase[k + 2] = wz;
+      pos[k] = wx;
+      pos[k + 1] = wy;
+      pos[k + 2] = wz;
+
+      const u = cl((wx + 1.0) * 0.5, 0, 1);
+      tmpCol.copy(cStart).lerp(cEnd, u);
+      cols[k] = tmpCol.r;
+      cols[k + 1] = tmpCol.g;
+      cols[k + 2] = tmpCol.b;
+
+      const dx = Math.random() - 0.5;
+      const dy = Math.random() - 0.5;
+      const dz = Math.random() - 0.5;
+      const len = Math.hypot(dx, dy, dz) || 1;
+      faceDir[k] = dx / len;
+      faceDir[k + 1] = dy / len;
+      faceDir[k + 2] = dz / len;
+      faceDist[i] = 2.0 + Math.random() * 3.0;
+    }
+
+    const faceGeo = new THREE.BufferGeometry();
+    facePosAttr = new THREE.BufferAttribute(pos, 3);
+    faceGeo.setAttribute('position', facePosAttr);
+    faceGeo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+
+    faceTextMat = new THREE.PointsMaterial({
+      size: 0.02,
+      sizeAttenuation: true,
+      vertexColors: true,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0,
+    });
+
+    faceTextPoints = new THREE.Points(faceGeo, faceTextMat);
+    tg.add(faceTextPoints);
+    tp.visible = false;
+  } catch (err) {
+    console.error('Failed to build face text particles:', err);
+    tp.visible = true;
+  }
+}
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(buildFaceTextParticles).catch(buildFaceTextParticles);
+} else {
+  buildFaceTextParticles();
+}
 
 // ---------- capsules
 const LABELS = [
@@ -682,8 +771,37 @@ function animate(now) {
   tg.rotation.copy(e4);
   tg.scale.setScalar(scl);
   tg.position.set(cubeX, 2.6 + cubeY, 0);
-  const cubeTextFade = 1 - cl(scrollState.spread * 2, 0, 1);
-  tm.opacity = S(15.0, 16.5, ts) * morph * 0.7 * cubeTextFade;
+  const faceIn = S(15.0, 16.5, ts) * morph;
+  const faceFade = 1 - cl(textVal / 0.5, 0, 1);
+  if (faceTextPoints && faceTextMat && facePosAttr && faceBase && faceDir && faceDist) {
+    const fSpread = prefersReducedMotion ? 0 : cl(scrollState.spread, 0, 1);
+    if (fSpread !== lastFaceSpread) {
+      lastFaceSpread = fSpread;
+      const arr = facePosAttr.array;
+      const distMul = fSpread * SPREAD_DISTANCE;
+      for (let i = 0; i < faceDist.length; i++) {
+        const k = i * 3;
+        const d = faceDist[i] * distMul;
+        const nx = faceBase[k] + faceDir[k] * d;
+        const ny = faceBase[k + 1] + faceDir[k + 1] * d;
+        const nz = faceBase[k + 2] + faceDir[k + 2] * d;
+        if (Number.isFinite(nx) && Number.isFinite(ny) && Number.isFinite(nz)) {
+          arr[k] = nx;
+          arr[k + 1] = ny;
+          arr[k + 2] = nz;
+        }
+      }
+      facePosAttr.needsUpdate = true;
+    }
+    const fOp = faceIn * faceFade;
+    if (Number.isFinite(fOp)) {
+      faceTextMat.opacity = cl(fOp, 0, 1);
+    }
+  } else {
+    const cubeTextFade = 1 - cl(scrollState.spread * 2, 0, 1);
+    const tOp = faceIn * 0.7 * cubeTextFade;
+    if (Number.isFinite(tOp)) tm.opacity = cl(tOp, 0, 1);
+  }
 
   // DOM intro + scroll-driven fades
   const navOpacity = prefersReducedMotion ? 1 : S(2.0, 2.8, t);
