@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Hector Tech Labs</title>
-    <script type="module" crossorigin src="/assets/index-2oKt2gfE.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CDjQmGGb.css">
+    <script type="module" crossorigin src="/assets/index-BZkbzI_4.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CeG2BvN4.css">
   </head>
   <body>
-    <div id="scroll-container" class="relative w-full bg-[#000000]" style="height: 500vh; height: 500svh;">
-      <div id="stage" class="fixed inset-0 w-full overflow-hidden bg-[#000000]" style="height: 100vh; height: 100svh;">
+    <div id="stage" class="sticky top-0 left-0 w-full overflow-hidden bg-[#000000] z-20" style="height: 100vh; height: 100svh;">
       <canvas id="c" class="absolute inset-0 w-full h-full block"></canvas>
 
       <div id="capsules" class="pointer-events-none"></div>
@@ -129,8 +129,9 @@
         </svg>
         HECTOR TECH LABS
       </div>
-      </div>
     </div>
+
+    <div id="scroll-container" class="relative z-0 w-full bg-transparent overflow-x-clip pointer-events-none" style="height: 500vh; height: 500svh; margin-top: -100vh; margin-top: -100svh;"></div>
 
     <section
       id="projects"
