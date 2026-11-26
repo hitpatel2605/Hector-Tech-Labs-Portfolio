@@ -15,7 +15,7 @@
     min-height: 100%;
     background-color: #000000;
     color: var(--hud-text);
-    overflow-x: hidden;
+    overflow-x: clip;
     font-family: var(--hud-font);
     font-weight: var(--hud-weight-regular);
     font-variant-numeric: tabular-nums;

@@ -19,9 +19,18 @@ import {
   SPREAD_DISTANCE,
   TEXT_WIDTH,
   TEXT_POSITION_Y,
+  MOBILE_NORMALIZE_SCROLL,
 } from './config.ts';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+if (isTouchDevice) {
+  ScrollTrigger.config({ ignoreMobileResize: true });
+  if (MOBILE_NORMALIZE_SCROLL) {
+    ScrollTrigger.normalizeScroll({ allowNestedScroll: true });
+  }
+}
 
 const prefersReducedMotion = window.matchMedia(
   '(prefers-reduced-motion: reduce)'
@@ -548,11 +557,15 @@ const m4 = new THREE.Matrix4();
 
 // ---------- Lenis + GSAP ScrollTrigger (locked until intro finishes)
 document.body.style.overflowY = 'hidden';
-const lenis = new Lenis({
-  smoothWheel: true,
-});
-lenis.stop();
-lenis.on('scroll', ScrollTrigger.update);
+const lenis = !isTouchDevice
+  ? new Lenis({
+      smoothWheel: true,
+    })
+  : null;
+if (lenis) {
+  lenis.stop();
+  lenis.on('scroll', ScrollTrigger.update);
+}
 
 const scrollState = { progress: 0, spread: 0, textForm: 0 };
 const storyScrollTrigger = gsap.to(scrollState, {
@@ -677,7 +690,7 @@ let introUnlocked = false;
 
 function animate(now) {
   requestAnimationFrame(animate);
-  lenis.raf(now);
+  if (lenis) lenis.raf(now);
 
   // Pause WebGL rendering and capsule updates when all sections are scrolled off-screen
   const lastSection = contactSection || projectsSection;
@@ -692,7 +705,7 @@ function animate(now) {
   if (!introUnlocked && (prefersReducedMotion || t >= 3.3)) {
     introUnlocked = true;
     document.body.style.overflowY = '';
-    lenis.start();
+    if (lenis) lenis.start();
   }
 
   // Map 0..1 scroll progress to prototype seconds (5.0s -> 17.5s, ending right on Contact Us)

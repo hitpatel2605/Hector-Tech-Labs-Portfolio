@@ -30,3 +30,5 @@ export const CUBE_LETTER_SPACING = 16;
 export const SPREAD_DISTANCE = 1.0;
 export const TEXT_WIDTH = 9.0;
 export const TEXT_POSITION_Y = 2.6;
+
+export const MOBILE_NORMALIZE_SCROLL = true;
