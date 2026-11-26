@@ -262,15 +262,18 @@ if (document.fonts && document.fonts.ready) {
   buildTextTargets();
 }
 
-const vert = `attribute vec3 aSphere;attribute vec3 aCube;attribute vec4 aRand;attribute float aEdge;
-uniform float uTime,uIntro,uMorph,uSize,uWarp,uReflect,uCubeScale,uCursorFalloff,uCursorStrength;uniform mat3 uCubeRot;uniform vec3 uCur[4];uniform vec4 uCW;uniform vec3 uCubeCenter,uCubeOffset,uCursor;
+const vert = `attribute vec3 aSphere;attribute vec3 aCube;attribute vec4 aRand;attribute float aEdge;attribute vec3 aText;
+uniform float uTime,uIntro,uMorph,uSize,uWarp,uReflect,uCubeScale,uCursorFalloff,uCursorStrength,uSpread,uText;uniform mat3 uCubeRot;uniform vec3 uCur[4];uniform vec4 uCW;uniform vec3 uCubeCenter,uCubeOffset,uCursor;
 varying vec3 vColor;varying float vAlpha;
 const vec3 CYAN=vec3(.31,.85,1.);const vec3 BLUE=vec3(.10,.26,1.);const vec3 VIOLET=vec3(.54,.36,1.);
 void main(){
  float stag=aRand.x*.45;float tI=smoothstep(stag*.8,stag*.8+.55,uIntro);float tM=smoothstep(stag,stag+.55,uMorph);
  vec3 cube=uCubeRot*(aCube-uCubeCenter)*uCubeScale+uCubeCenter+uCubeOffset;
  vec3 p=mix(aSphere,position,tI);p=mix(p,cube,tM);
- float arc=sin(3.14159*tI)*.5+sin(3.14159*tM)*1.1;
+ p+=normalize(aRand.xyz-.5+.0001)*uSpread*(2.0+3.0*aRand.y);
+ float tT=smoothstep(aRand.x*.4,aRand.x*.4+.6,uText);
+ p=mix(p,aText,tT);
+ float arc=sin(3.14159*tI)*.5+sin(3.14159*tM)*1.1+sin(3.14159*uText)*1.1;
  p+=vec3(sin(aRand.z*6.283+uTime*.6),cos(aRand.z*12.57+uTime*.5),sin(aRand.z*9.42+uTime*.4))*arc*(.6+aRand.y*.5);
  p+=vec3(sin(uTime*.5+aRand.z*20.),cos(uTime*.4+aRand.z*31.),sin(uTime*.45+aRand.z*17.))*.035*(1.-tM*.7);
  vec3 d3=p-uCursor;float f=exp(-dot(d3.xy,d3.xy)*2.2);p.z-=f*.45;p.xy+=normalize(d3.xy+1e-4)*f*.12;
@@ -279,9 +282,16 @@ void main(){
  float rootGlow=(aRand.w<1.5)?exp(-position.y*.65)*.45:0.;
  vec3 tc=mix(mix(CYAN,BLUE,smoothstep(0.,.45,rad)),VIOLET,smoothstep(.45,1.,rad))+CYAN*rootGlow*.35;
  vec3 cc=aEdge>.5?mix(CYAN,VIOLET,smoothstep(-1.2,1.2,(aCube.y-uCubeCenter.y)+(aCube.x-uCubeCenter.x)*-.4))*1.5:BLUE*.85;
- vColor=mix(tc,cc,tM);vAlpha=mix(.85+rootGlow*.15,aEdge>.5?1.:.55,tM)*(uReflect>.5?.16:1.);
+ vec3 textCol=mix(CYAN,VIOLET,smoothstep(-4.5,4.5,aText.x));
+ float textVis=smoothstep(0.8,1.0,uText);
+ vColor=mix(mix(tc,cc,tM),textCol,textVis);
+ float spreadDim=mix(1.0,0.6,clamp(uSpread,0.0,1.0)*(1.0-smoothstep(0.0,0.5,uText)));
+ float baseAlpha=mix(.85+rootGlow*.15,aEdge>.5?1.:.55,tM)*spreadDim;
+ vAlpha=mix(baseAlpha,0.85,textVis)*(uReflect>.5?.16:1.);
  vec4 mv=modelViewMatrix*vec4(p,1.);
- gl_PointSize=aRand.y*uSize*(8./-mv.z)*mix(1.,aEdge>.5?1.3:.8,tM);gl_Position=projectionMatrix*mv;}`;
+ float szMul=mix(mix(1.,aEdge>.5?1.3:.8,tM),0.75,clamp(uSpread,0.0,1.0)*(1.0-smoothstep(0.0,0.5,uText)));
+ szMul=mix(szMul,1.25,textVis);
+ gl_PointSize=aRand.y*uSize*(8./-mv.z)*szMul;gl_Position=projectionMatrix*mv;}`;
 
 const frag = `varying vec3 vColor;varying float vAlpha;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(pow(vColor,vec3(1.25)),smoothstep(.5,.16,d)*vAlpha*.48);}`;
 
@@ -302,6 +312,8 @@ const mk = (refl) =>
       uCubeScale: { value: 1 },
       uCursorFalloff: { value: 90.0 * (0.15 / CURSOR_RADIUS) ** 2 },
       uCursorStrength: { value: CURSOR_STRENGTH },
+      uSpread: { value: 0 },
+      uText: { value: 0 },
       uCubeRot: { value: new THREE.Matrix3() },
       uCubeCenter: { value: new THREE.Vector3(0, 2.6, 0) },
       uCubeOffset: { value: new THREE.Vector3() },
@@ -474,7 +486,6 @@ const spreadScrollTrigger = ScrollTrigger.create({
     const val = prefersReducedMotion ? 0 : cl(self.progress, 0, 1);
     if (Number.isFinite(val)) {
       scrollState.spread = val;
-      if (val > 0 && val < 1) console.log('spread:', val.toFixed(2));
     }
   },
 });
@@ -483,13 +494,12 @@ const textFormScrollTrigger = ScrollTrigger.create({
   trigger: '#projects',
   start: 'center center',
   endTrigger: '#contact',
-  end: 'center center',
+  end: 'bottom bottom',
   scrub: 1.2,
   onUpdate: (self) => {
     const val = prefersReducedMotion ? 0 : cl(self.progress, 0, 1);
     if (Number.isFinite(val)) {
       scrollState.textForm = val;
-      if (val > 0 && val < 1) console.log('textForm:', val.toFixed(2));
     }
   },
 });
@@ -647,12 +657,17 @@ function animate(now) {
   e4.set(rotX, rotY + Math.sin(t * 0.25) * 0.05, 0);
   m4.makeRotationFromEuler(e4);
 
+  const spreadVal = prefersReducedMotion ? 0 : cl(scrollState.spread, 0, 1) * SPREAD_DISTANCE;
+  const textVal = prefersReducedMotion ? 0 : cl(scrollState.textForm, 0, 1);
+
   for (const m of [m1, m2]) {
     const u = m.uniforms;
     u.uTime.value = t;
     u.uIntro.value = intro;
     u.uMorph.value = morph;
     u.uWarp.value = warp;
+    if (Number.isFinite(spreadVal)) u.uSpread.value = spreadVal;
+    if (Number.isFinite(textVal)) u.uText.value = textVal;
     u.uCubeRot.value.setFromMatrix4(m4);
     u.uCubeScale.value = scl;
     u.uCubeOffset.value.set(cubeX, cubeY, 0);
