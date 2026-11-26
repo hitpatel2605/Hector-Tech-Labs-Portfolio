@@ -57,8 +57,19 @@ try {
 }
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(35, W / H, 0.1, 80);
-camera.position.set(0, 2.4, 9);
+const getFitParams = (w, h) => {
+  const aspect = w / Math.max(h, 1);
+  if (aspect < 1.2) {
+    const fov = Math.min(56, Math.max(35, 35 + (1.2 - aspect) * 28));
+    const halfRad = (fov * Math.PI) / 360;
+    const neededZ = 7.6 / (2 * Math.tan(halfRad) * Math.max(aspect, 0.35));
+    return { aspect, fov, camZFit: Math.max(0, neededZ - 9) };
+  }
+  return { aspect, fov: 35, camZFit: 0 };
+};
+let fitParams = getFitParams(W, H);
+const camera = new THREE.PerspectiveCamera(fitParams.fov, fitParams.aspect, 0.1, 80);
+camera.position.set(0, 2.4, 9 + fitParams.camZFit);
 
 if (hasWebGL && renderer) {
   composer = new EffectComposer(renderer);
@@ -306,7 +317,7 @@ const mk = (refl) =>
       uTime: { value: 0 },
       uIntro: { value: 0 },
       uMorph: { value: 0 },
-      uSize: { value: (W / 1280) * 2.5 },
+      uSize: { value: (Math.max(W, 640) / 1280) * 2.5 },
       uWarp: { value: 0 },
       uReflect: { value: refl ? 1 : 0 },
       uCubeScale: { value: 1 },
@@ -498,7 +509,7 @@ const capsulesContainer = document.getElementById('capsules');
 const caps = LABELS.map((label) => {
   const d = document.createElement('div');
   d.className =
-    'hud-label hud-capsule hud-frame pointer-events-auto absolute left-0 top-0 flex items-center justify-center h-[8vh] px-[2.2vw] whitespace-nowrap opacity-0';
+    'hud-label hud-capsule hud-frame pointer-events-auto absolute left-0 top-0 flex items-center justify-center h-[38px] px-3.5 text-[10px] md:h-[8vh] md:px-[2.2vw] md:text-[12px] whitespace-nowrap opacity-0';
   const corners = document.createElement('span');
   corners.className = 'hud-corners';
   corners.setAttribute('aria-hidden', 'true');
@@ -616,19 +627,29 @@ window.addEventListener('pointermove', (e) => {
   mouseY = e.clientY;
 });
 
-window.addEventListener('resize', () => {
-  W = window.innerWidth;
-  H = window.innerHeight;
-  camera.aspect = W / H;
-  camera.updateProjectionMatrix();
-  if (renderer && composer) {
-    renderer.setSize(W, H, false);
-    composer.setSize(W, H);
-  }
-  const sz = (W / 1280) * 2.5;
-  m1.uniforms.uSize.value = sz;
-  m2.uniforms.uSize.value = sz;
-});
+let resizeTimer = null;
+const handleResize = () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    fitParams = getFitParams(W, H);
+    camera.fov = fitParams.fov;
+    camera.aspect = fitParams.aspect;
+    camera.updateProjectionMatrix();
+    if (renderer && composer) {
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setSize(W, H, false);
+      composer.setSize(W, H);
+    }
+    const sz = (Math.max(W, 640) / 1280) * 2.5;
+    m1.uniforms.uSize.value = sz;
+    m2.uniforms.uSize.value = sz;
+    ScrollTrigger.refresh();
+  }, 150);
+};
+window.addEventListener('resize', handleResize);
+window.addEventListener('orientationchange', handleResize);
 
 const worldAt = (px, py) => {
   const n = new THREE.Vector3((px / W) * 2 - 1, -(py / H) * 2 + 1, 0.5)
@@ -682,10 +703,11 @@ function animate(now) {
   const rotYBase = 0.18 * S(14.5, 16, ts) + -0.73 * zoom;
   const rotXBase = 0.18 * zoom;
   const sclBase = 1 + 0.05 * zoom;
-  const cubeXBase = 0.4 * zoom;
+  const isPortrait = fitParams.aspect < 1.2;
+  const cubeXBase = (isPortrait ? 0 : 0.4) * zoom;
   const cubeYBase = -0.45 * zoom;
-  const camZ = 9 - 0.6 * zoom;
-  const camX = 0.25 * zoom;
+  const camZ = 9 + fitParams.camZFit - 0.6 * zoom;
+  const camX = (isPortrait ? 0 : 0.25) * zoom;
   const dimBase = 1 - 0.55 * zoom;
   const warp = S(16.0, 17.5, ts);
 
@@ -816,10 +838,13 @@ function animate(now) {
     ? 1
     : S(6.0, 6.8, ts) * (1 - S(10.0, 10.8, ts));
   const ph = (ts - 6.0) * 0.5 + 0.2 + (showCapsules ? t * 0.35 : 0);
+  const capScale = fitParams.aspect < 1.2 ? cl(fitParams.aspect / 1.2, 0.52, 1) : 1;
+  const capRx = 3.1 * capScale;
+  const capRz = 2.0 * capScale;
   caps.forEach((el, i) => {
     const th = ph + (i * 6.2832) / 5;
     const fl = Math.sin(t * 1.3 + i * 1.7) * 0.04;
-    capVec.set(3.1 * Math.cos(th), 0.55 + fl, 2.0 * Math.sin(th)).project(camera);
+    capVec.set(capRx * Math.cos(th), 0.55 + fl, capRz * Math.sin(th)).project(camera);
     const d = (Math.sin(th) + 1) / 2;
     const backFade = S(0.25, 0.5, d);
     const x = (capVec.x * 0.5 + 0.5) * W;
@@ -889,31 +914,31 @@ if (projectCardsContainer) {
   projects.forEach((proj, idx) => {
     const card = document.createElement('article');
     card.className =
-      'project-card hud-card hud-frame pointer-events-auto relative flex flex-col justify-between overflow-hidden opacity-0';
+      'project-card hud-card hud-frame pointer-events-auto relative flex flex-row md:flex-col justify-between overflow-hidden opacity-0';
     card.style.background = 'rgba(10, 12, 24, 0.85)';
     card.style.backdropFilter = 'none';
 
     const tagsHtml = proj.tags
       .map(
         (tag) =>
-          `<span class="px-2 py-0.5 text-[10px] font-gm uppercase tracking-wider rounded-full border border-white/12 bg-white/5 text-white/75">${tag}</span>`
+          `<span class="px-1.5 py-0.5 md:px-2 text-[9px] md:text-[10px] font-gm uppercase tracking-wider rounded-full border border-white/12 bg-white/5 text-white/75">${tag}</span>`
       )
       .join('');
 
     card.innerHTML = `
       <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-      <span class="hud-num absolute right-[1.2vw] top-[1.2vw] z-10">[ 0${idx + 1} ]</span>
-      <div class="w-full h-[17vh] shrink-0 overflow-hidden border-b border-white/10">
+      <span class="hud-num absolute right-2.5 top-2 md:right-[1.2vw] md:top-[1.2vw] z-10 text-[10px] md:text-[12px]">[ 0${idx + 1} ]</span>
+      <div class="w-[104px] sm:w-[130px] md:w-full h-full md:h-[17vh] shrink-0 overflow-hidden border-r md:border-r-0 md:border-b border-white/10">
         <img src="${proj.image}" alt="${proj.title}" class="w-full h-full object-cover" loading="lazy" />
       </div>
-      <div class="p-[1.15vw] flex flex-col flex-1 justify-between gap-[0.4vw] min-h-0">
+      <div class="p-3 md:p-[1.15vw] flex flex-col flex-1 justify-between gap-1.5 md:gap-[0.4vw] min-w-0 min-h-0">
         <div>
-          <h3 class="hud-label hud-card-title">${proj.title}</h3>
-          <p class="hud-body mt-[0.25vw]">${proj.description}</p>
+          <h3 class="hud-label hud-card-title text-[11px] md:text-[12px] pr-10 md:pr-0">${proj.title}</h3>
+          <p class="hud-body mt-1 md:mt-[0.25vw] text-[11px] md:text-[13px] line-clamp-2 md:line-clamp-none">${proj.description}</p>
         </div>
-        <div class="flex items-end justify-between gap-2 pt-1">
-          <div class="flex flex-wrap gap-1.5">${tagsHtml}</div>
-          <a href="${proj.url}" target="_blank" rel="noopener noreferrer" class="hud-label text-[0.65vw] tracking-[0.14em] text-[#4fd8ff] hover:text-white transition-colors inline-flex items-center gap-1 shrink-0 pb-0.5">
+        <div class="flex items-end justify-between gap-2 pt-0.5 md:pt-1">
+          <div class="hidden sm:flex flex-wrap gap-1.5">${tagsHtml}</div>
+          <a href="${proj.url}" target="_blank" rel="noopener noreferrer" class="hud-label text-[10px] md:text-[0.65vw] tracking-[0.14em] text-[#4fd8ff] hover:text-white transition-colors inline-flex items-center gap-1 shrink-0 pb-0.5">
             VIEW PROJECT <span aria-hidden="true">→</span>
           </a>
         </div>

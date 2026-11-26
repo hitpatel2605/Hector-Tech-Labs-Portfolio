@@ -15,7 +15,7 @@
     min-height: 100%;
     background-color: #000000;
     color: var(--hud-text);
-    overflow-x: clip;
+    overflow-x: hidden;
     font-family: var(--hud-font);
     font-weight: var(--hud-weight-regular);
     font-variant-numeric: tabular-nums;
@@ -46,6 +46,20 @@
     text-transform: uppercase;
     color: var(--hud-text);
     font-style: normal;
+  }
+
+  @media (max-width: 767px) {
+    .hud-headline {
+      font-size: clamp(22px, 6.2vw, 36px);
+    }
+    .hud-card-title {
+      padding-top: 6px;
+      margin-bottom: 4px;
+      font-size: 11px;
+    }
+    .hud-card-title::before {
+      width: 24px;
+    }
   }
 
   .hud-body {

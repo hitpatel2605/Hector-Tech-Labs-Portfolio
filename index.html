@@ -6,8 +6,8 @@
     <title>Hector Tech Labs</title>
   </head>
   <body>
-    <div id="scroll-container" class="relative w-full h-[500vh] bg-[#000000]">
-      <div id="stage" class="fixed inset-0 w-full h-screen overflow-hidden bg-[#000000]">
+    <div id="scroll-container" class="relative w-full bg-[#000000]" style="height: 500vh; height: 500svh;">
+      <div id="stage" class="fixed inset-0 w-full overflow-hidden bg-[#000000]" style="height: 100vh; height: 100svh;">
       <canvas id="c" class="absolute inset-0 w-full h-full block"></canvas>
 
       <div id="capsules" class="pointer-events-none"></div>
@@ -16,7 +16,7 @@
       <div id="hero" class="absolute inset-0 z-20 opacity-0 pointer-events-none">
         <div
           id="badge"
-          class="hud-label hud-badge hud-frame absolute right-[3.6vw] top-[3.2vh] flex items-center gap-[0.6vw] px-[1vw] py-[0.6vh]"
+          class="hud-label hud-badge hud-frame absolute left-[16px] top-[58px] md:left-auto md:right-[3.6vw] md:top-[3.2vh] flex items-center gap-1.5 md:gap-[0.6vw] px-2.5 py-1 md:px-[1vw] md:py-[0.6vh] text-[10px] md:text-[12px]"
         >
           <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
           <span class="hud-accent">//</span>
@@ -24,7 +24,7 @@
         </div>
 
         <div
-          class="absolute left-[3.6vw] bottom-[7vh] flex flex-col items-start gap-[12px] p-[36px] -m-[36px]"
+          class="absolute left-[16px] right-[16px] bottom-[5vh] md:left-[3.6vw] md:right-auto md:bottom-[7vh] flex flex-col items-start gap-[12px] p-[24px] -m-[24px] md:p-[36px] md:-m-[36px]"
           style="background: radial-gradient(ellipse at 35% 65%, rgba(2, 2, 10, 0.75) 0%, rgba(2, 2, 10, 0.4) 50%, transparent 78%);"
         >
           <h1
@@ -36,7 +36,7 @@
 
           <p
             id="hp"
-            class="hud-body max-w-[420px]"
+            class="hud-body max-w-[420px] text-[12px] md:text-[13px]"
           >
             Websites, software and AI-powered automation, designed and engineered to help your business move faster.
           </p>
@@ -46,7 +46,7 @@
       <!-- Section 2: Intelligence With Purpose -->
       <h2
         id="h2"
-        class="hud-headline absolute left-[4vw] top-[13vh] z-25 pointer-events-none"
+        class="hud-headline absolute left-[16px] right-[16px] top-[9vh] md:left-[4vw] md:right-auto md:top-[13vh] z-25 pointer-events-none"
       >
         <span class="block overflow-hidden h-[1.12em]">
           <b class="block translate-y-[110%]">Intelligence</b>
@@ -58,7 +58,7 @@
 
       <p
         id="cp"
-        class="hud-body absolute left-[73vw] w-[23vw] top-[16vh] z-25 opacity-0 pointer-events-none"
+        class="hud-body absolute left-[16px] right-[16px] top-[20vh] w-auto text-[12px] md:left-[73vw] md:right-auto md:w-[23vw] md:top-[16vh] md:text-[13px] z-25 opacity-0 pointer-events-none"
       >
         We engineer modern digital experiences, intelligent software and powerful technology solutions that help businesses innovate, automate and grow.
       </p>
@@ -66,45 +66,45 @@
       <!-- 4 Glass Cards -->
       <div
         id="cards"
-        class="absolute left-[3.8vw] right-[3.8vw] bottom-[5vh] h-[29vh] grid grid-cols-4 gap-[1.3vw] z-30 pointer-events-none"
+        class="absolute left-[16px] right-[16px] bottom-[3vh] h-auto md:left-[3.8vw] md:right-[3.8vw] md:bottom-[5vh] md:h-[29vh] grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-[1.3vw] z-30 pointer-events-none"
       >
         <article
-          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-[1.4vw] opacity-0"
+          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-3 pt-7 md:p-[1.4vw] opacity-0"
         >
           <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-          <span class="hud-num absolute right-[1.2vw] top-[1.2vw]">[ 01 ]</span>
+          <span class="hud-num absolute right-2.5 top-2 text-[10px] md:right-[1.2vw] md:top-[1.2vw] md:text-[12px]">[ 01 ]</span>
           <h3 class="hud-label hud-card-title">Web Development</h3>
-          <p class="hud-body">
+          <p class="hud-body text-[11px] leading-[1.4] line-clamp-3 md:text-[13px] md:leading-[1.7] md:line-clamp-none">
             Building modern, responsive and high-performance websites for exceptional digital experiences.
           </p>
         </article>
         <article
-          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-[1.4vw] opacity-0"
+          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-3 pt-7 md:p-[1.4vw] opacity-0"
         >
           <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-          <span class="hud-num absolute right-[1.2vw] top-[1.2vw]">[ 02 ]</span>
+          <span class="hud-num absolute right-2.5 top-2 text-[10px] md:right-[1.2vw] md:top-[1.2vw] md:text-[12px]">[ 02 ]</span>
           <h3 class="hud-label hud-card-title">Software Engineering</h3>
-          <p class="hud-body">
+          <p class="hud-body text-[11px] leading-[1.4] line-clamp-3 md:text-[13px] md:leading-[1.7] md:line-clamp-none">
             Developing custom software solutions that solve business challenges and streamline operations.
           </p>
         </article>
         <article
-          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-[1.4vw] opacity-0"
+          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-3 pt-7 md:p-[1.4vw] opacity-0"
         >
           <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-          <span class="hud-num absolute right-[1.2vw] top-[1.2vw]">[ 03 ]</span>
+          <span class="hud-num absolute right-2.5 top-2 text-[10px] md:right-[1.2vw] md:top-[1.2vw] md:text-[12px]">[ 03 ]</span>
           <h3 class="hud-label hud-card-title">AI &amp; Automation</h3>
-          <p class="hud-body">
+          <p class="hud-body text-[11px] leading-[1.4] line-clamp-3 md:text-[13px] md:leading-[1.7] md:line-clamp-none">
             Creating intelligent systems and automated workflows that improve business productivity.
           </p>
         </article>
         <article
-          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-[1.4vw] opacity-0"
+          class="card hud-card hud-frame pointer-events-auto relative flex flex-col justify-end p-3 pt-7 md:p-[1.4vw] opacity-0"
         >
           <span class="hud-corners" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-          <span class="hud-num absolute right-[1.2vw] top-[1.2vw]">[ 04 ]</span>
+          <span class="hud-num absolute right-2.5 top-2 text-[10px] md:right-[1.2vw] md:top-[1.2vw] md:text-[12px]">[ 04 ]</span>
           <h3 class="hud-label hud-card-title">UI/UX Design</h3>
-          <p class="hud-body">
+          <p class="hud-body text-[11px] leading-[1.4] line-clamp-3 md:text-[13px] md:leading-[1.7] md:line-clamp-none">
             Designing intuitive, elegant and user-friendly digital experiences.
           </p>
         </article>
@@ -113,13 +113,13 @@
       <!-- 3 Project Cards (shown in fixed stage, like service cards) -->
       <div
         id="project-cards"
-        class="absolute left-[3.8vw] right-[3.8vw] bottom-[5vh] h-[42vh] grid grid-cols-3 gap-[1.3vw] z-30 pointer-events-none"
+        class="absolute left-[16px] right-[16px] bottom-[3vh] h-[66vh] md:left-[3.8vw] md:right-[3.8vw] md:bottom-[5vh] md:h-[42vh] grid grid-cols-1 md:grid-cols-3 gap-2.5 md:gap-[1.3vw] z-30 pointer-events-none"
       ></div>
 
       <!-- Logo -->
       <div
         id="logo"
-        class="absolute left-[3.6vw] top-[3.2vh] flex items-center gap-[0.6vw] font-gm font-medium text-[1.15vw] tracking-[0.03em] z-40" style="opacity:0"
+        class="absolute left-[16px] top-[20px] flex items-center gap-2 font-gm font-medium text-[13px] md:left-[3.6vw] md:top-[3.2vh] md:gap-[0.6vw] md:text-[1.15vw] tracking-[0.03em] z-40" style="opacity:0"
       >
         <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#fff" stroke-width="1.5">
           <path d="M13 2l9.5 5.5v11L13 24 3.5 18.5v-11z" />
