@@ -32,7 +32,7 @@ if (isTouchDevice) {
   }
 }
 
-// ---------- scroll restoration (Problem 1)
+// ---------- scroll restoration (simplified)
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
 let _scrollSaveTimer = 0;
@@ -42,40 +42,23 @@ function saveScrollPosition() {
   if (now - _scrollSaveTimer < 200) return;
   _scrollSaveTimer = now;
   try {
-    sessionStorage.setItem('returnScroll', JSON.stringify({ y: window.scrollY, t: now }));
+    sessionStorage.setItem('returnScroll', String(Math.round(window.scrollY)));
   } catch {}
 }
 window.addEventListener('scroll', saveScrollPosition, { passive: true });
-
-// Save on external / mailto / tel link clicks
-document.addEventListener('click', (e) => {
-  const a = e.target.closest('a[href]');
-  if (!a) return;
-  const h = a.getAttribute('href') || '';
-  if (h.startsWith('mailto:') || h.startsWith('tel:') || (a.target === '_blank')) {
-    saveScrollPosition();
-  }
-}, true);
 
 function restoreScrollPosition() {
   try {
     const raw = sessionStorage.getItem('returnScroll');
     if (!raw) return;
-    const { y, t } = JSON.parse(raw);
-    if (!Number.isFinite(y) || !Number.isFinite(t)) return;
-    if (Date.now() - t > 10 * 60 * 1000) {
-      sessionStorage.removeItem('returnScroll');
-      return;
-    }
+    const y = Number(raw);
+    if (!Number.isFinite(y)) return;
     sessionStorage.removeItem('returnScroll');
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        ScrollTrigger.refresh();
-        window.scrollTo({ top: y, behavior: 'instant' });
-        if (lenis) lenis.scrollTo(y, { immediate: true });
-        ScrollTrigger.update();
-      });
-    });
+    if (Math.abs(y - window.scrollY) > 50) {
+      window.scrollTo({ top: y, behavior: 'instant' });
+      if (lenis) lenis.scrollTo(y, { immediate: true });
+    }
+    ScrollTrigger.update();
   } catch {}
 }
 
@@ -998,24 +981,21 @@ if (canvas) {
     e.preventDefault();
   });
   canvas.addEventListener('webglcontextrestored', () => {
+    try {
+      const last = Number(sessionStorage.getItem('lastWebGLReload') || 0);
+      if (Date.now() - last < 30000) return;
+      sessionStorage.setItem('lastWebGLReload', String(Date.now()));
+    } catch {}
     saveScrollPosition();
     location.reload();
   });
 }
 
 // ---------- Visibility / pageshow / focus restore
-let _resumePending = false;
 function handleResume() {
-  if (_resumePending) return;
-  _resumePending = true;
   _forceRenderFrames = 10;
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      _resumePending = false;
-      ScrollTrigger.refresh();
-      restoreScrollPosition();
-    });
-  });
+  restoreScrollPosition();
+  ScrollTrigger.update();
 }
 
 window.addEventListener('pageshow', (e) => {
