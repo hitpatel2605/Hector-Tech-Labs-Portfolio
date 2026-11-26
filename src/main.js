@@ -20,6 +20,7 @@ import {
   TEXT_WIDTH,
   TEXT_POSITION_Y,
   MOBILE_NORMALIZE_SCROLL,
+  CONTACT_EMAIL,
 } from './config.ts';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -52,13 +53,13 @@ function restoreScrollPosition() {
     const raw = sessionStorage.getItem('returnScroll');
     if (!raw) return;
     const y = Number(raw);
-    if (!Number.isFinite(y)) return;
-    sessionStorage.removeItem('returnScroll');
-    if (Math.abs(y - window.scrollY) > 50) {
+    if (!Number.isFinite(y) || y <= 0) return;
+    if (window.scrollY === 0) {
+      sessionStorage.removeItem('returnScroll');
       window.scrollTo({ top: y, behavior: 'instant' });
       if (lenis) lenis.scrollTo(y, { immediate: true });
+      ScrollTrigger.update();
     }
-    ScrollTrigger.update();
   } catch {}
 }
 
@@ -975,27 +976,43 @@ function animate(now) {
 
 requestAnimationFrame(animate);
 
-// ---------- WebGL context loss recovery
+// ---------- Contact mailto click handler
+const mailtoUrl = `mailto:${CONTACT_EMAIL}`;
+document.querySelectorAll('#contact a[href^="mailto:"]').forEach((link) => {
+  link.setAttribute('href', mailtoUrl);
+  if (link.id !== 'contact-btn') {
+    link.textContent = CONTACT_EMAIL;
+  }
+  link.addEventListener('click', (e) => {
+    try {
+      e.preventDefault();
+      link.blur();
+      if (isTouchDevice) {
+        window.location.href = mailtoUrl;
+      } else {
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'display:none;width:0;height:0;border:0;';
+        iframe.src = mailtoUrl;
+        document.body.appendChild(iframe);
+        setTimeout(() => iframe.remove(), 1000);
+      }
+    } catch {
+      window.location.href = mailtoUrl;
+    }
+  });
+});
+
+// ---------- WebGL context loss (prevent default only, no reload)
 if (canvas) {
   canvas.addEventListener('webglcontextlost', (e) => {
     e.preventDefault();
   });
-  canvas.addEventListener('webglcontextrestored', () => {
-    try {
-      const last = Number(sessionStorage.getItem('lastWebGLReload') || 0);
-      if (Date.now() - last < 30000) return;
-      sessionStorage.setItem('lastWebGLReload', String(Date.now()));
-    } catch {}
-    saveScrollPosition();
-    location.reload();
-  });
 }
 
-// ---------- Visibility / pageshow / focus restore
+// ---------- Passive scroll-0 guard on return
 function handleResume() {
   _forceRenderFrames = 10;
   restoreScrollPosition();
-  ScrollTrigger.update();
 }
 
 window.addEventListener('pageshow', (e) => {
@@ -1004,7 +1021,6 @@ window.addEventListener('pageshow', (e) => {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') handleResume();
 });
-window.addEventListener('focus', handleResume);
 
 // Run restore once on initial load
 restoreScrollPosition();

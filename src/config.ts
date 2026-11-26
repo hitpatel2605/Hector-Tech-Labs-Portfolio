@@ -32,3 +32,4 @@ export const TEXT_WIDTH = 9.0;
 export const TEXT_POSITION_Y = 2.6;
 
 export const MOBILE_NORMALIZE_SCROLL = true;
+export const CONTACT_EMAIL = 'hectortechlabs@gmail.com';
