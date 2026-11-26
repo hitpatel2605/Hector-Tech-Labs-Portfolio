@@ -199,6 +199,69 @@ geo.setAttribute('aCube', new THREE.BufferAttribute(cube, 3));
 geo.setAttribute('aRand', new THREE.BufferAttribute(rand, 4));
 geo.setAttribute('aEdge', new THREE.BufferAttribute(edge, 1));
 
+const textTargets = new Float32Array(cube);
+const textAttr = new THREE.BufferAttribute(textTargets, 3);
+geo.setAttribute('aText', textAttr);
+
+function buildTextTargets() {
+  const tCanvas = document.createElement('canvas');
+  tCanvas.width = 2048;
+  tCanvas.height = 256;
+  const tCtx = tCanvas.getContext('2d');
+  if (!tCtx) return;
+
+  tCtx.clearRect(0, 0, 2048, 256);
+  tCtx.fillStyle = '#ffffff';
+  tCtx.textAlign = 'center';
+  tCtx.textBaseline = 'middle';
+  tCtx.font = `700 132px ${FONT_FAMILY}`;
+  tCtx.fillText('HECTOR TECH LABS', 1024, 128);
+
+  const imgData = tCtx.getImageData(0, 0, 2048, 256).data;
+  const pts = [];
+  let minX = 2048;
+  let maxX = 0;
+  let minY = 256;
+  let maxY = 0;
+  for (let y = 0; y < 256; y += 2) {
+    for (let x = 0; x < 2048; x += 2) {
+      if (imgData[(y * 2048 + x) * 4 + 3] > 128) {
+        pts.push(x, y);
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  const count = pts.length / 2;
+  if (count === 0) return;
+
+  const spanX = Math.max(maxX - minX, 1);
+  const cxMid = (minX + maxX) * 0.5;
+  const cyMid = (minY + maxY) * 0.5;
+  const scale = TEXT_WIDTH / spanX;
+
+  for (let i = 0; i < N; i++) {
+    const pick = ((Math.random() * count) | 0) * 2;
+    const wx = (pts[pick] - cxMid) * scale;
+    const wy = TEXT_POSITION_Y - (pts[pick + 1] - cyMid) * scale;
+    const wz = (Math.random() * 2 - 1) * 0.03;
+    if (Number.isFinite(wx) && Number.isFinite(wy) && Number.isFinite(wz)) {
+      textTargets[i * 3] = wx;
+      textTargets[i * 3 + 1] = wy;
+      textTargets[i * 3 + 2] = wz;
+    }
+  }
+  textAttr.needsUpdate = true;
+}
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(buildTextTargets).catch(buildTextTargets);
+} else {
+  buildTextTargets();
+}
+
 const vert = `attribute vec3 aSphere;attribute vec3 aCube;attribute vec4 aRand;attribute float aEdge;
 uniform float uTime,uIntro,uMorph,uSize,uWarp,uReflect,uCubeScale,uCursorFalloff,uCursorStrength;uniform mat3 uCubeRot;uniform vec3 uCur[4];uniform vec4 uCW;uniform vec3 uCubeCenter,uCubeOffset,uCursor;
 varying vec3 vColor;varying float vAlpha;
