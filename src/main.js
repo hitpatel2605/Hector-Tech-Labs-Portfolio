@@ -769,12 +769,13 @@ function animate(now) {
   }
 
   const drift = prefersReducedMotion ? 0 : 1;
+  const textLookOffset = isPortrait ? 3.2 * textValNow : 0;
   camera.position.set(
     camX + Math.sin(t * 0.1) * 0.12 * drift,
-    2.4 + Math.sin(t * 0.13) * 0.05 * drift,
+    2.4 - textLookOffset + Math.sin(t * 0.13) * 0.05 * drift,
     camZ
   );
-  camera.lookAt(0, 2, 0);
+  camera.lookAt(0, 2 - textLookOffset, 0);
   camera.updateMatrixWorld();
 
   // Pointer->world unprojection onto z=0 plane (lerp 0.15)
