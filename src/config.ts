@@ -30,8 +30,3 @@ export const CUBE_LETTER_SPACING = 16;
 export const SPREAD_DISTANCE = 1.0;
 export const TEXT_WIDTH = 9.0;
 export const TEXT_POSITION_Y = 2.6;
-
-export const CHAR_STAGGER = 0.03;
-export const DISTANCE = 60;
-export const BLUR = 8;
-export const EASE = '0.625, 0.05, 0, 1';
